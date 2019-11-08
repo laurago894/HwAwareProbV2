@@ -53,3 +53,5 @@ def generate_folds(dataset_dict,folds,output_name):
                 writer_test.writerow(dataset_dict[sample])
             for sample in valid_samples:
                 writer_valid.writerow(dataset_dict[sample])
+
+    print('Writing folds to ', './datasets/' + output_name + '/' + output_name + '_foldx' )

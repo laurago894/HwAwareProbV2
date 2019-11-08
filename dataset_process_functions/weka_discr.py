@@ -55,8 +55,6 @@ def rewite_arff(output_name):
 
     class_values=attr_locs[-1].split(' ')[2].strip('{').strip('}').split(',')
 
-    print(class_values)
-
     for line in file_list:
         if "@attribute" in line:
             values.append(line.split(' ')[2].strip('{').strip('}').split(','))
@@ -64,18 +62,35 @@ def rewite_arff(output_name):
 
     dataset=file_list[(file_list.index('@data'))+2:]
 
+    features={}
+
+    #Remove variables that are always 0
+    for il, line in enumerate(dataset):
+        for inn,num in enumerate(line.split(',')[:-1]):
+            if il==0:
+                features[inn]=[int(num)]
+            else:
+                features[inn]=features[inn]+[int(num)]
+
+    remove_f=[]
+    for feat in features:
+        if sum(features[feat])==0:
+            remove_f.append(feat)
+
+    print('Ignoring features ', remove_f)
+
     dataset_dict={}
 
     with open(output_discr, mode='w') as bin_file:
         writer = csv.writer(bin_file, delimiter=',')
         for il,line in enumerate(dataset):
-            linelist = line.split(',')
+
+            linelist =[num for inum,num in enumerate(line.split(',')) if inum not in remove_f]
             linelist[-1]=class_values.index(linelist[-1])
             writer.writerow(linelist)
             dataset_dict[il]=linelist
 
     print('Writing reformatted binarized dataset to ', output_discr)
-
 
     return dataset_dict
 
