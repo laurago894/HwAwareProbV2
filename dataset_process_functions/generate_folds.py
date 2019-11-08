@@ -46,7 +46,8 @@ def generate_folds(dataset_dict,folds,output_name):
             [train_samples.pop(train_samples.index(num)) for num in valid_samples]
 
             # Check if sets are mutually exclusive
-            # print(len(list(set(list(set(train_samples))+list(set(test_samples))+list(set(valid_samples))))))
+            print('Are data points in fold', fold, ' mutually exclusive? ' ,len(list(set(list(set(train_samples))+list(set(test_samples))+list(set(valid_samples))))) == len(dataset_dict))
+
             for sample in train_samples:
                 writer_train.writerow(dataset_dict[sample])
             for sample in test_samples:

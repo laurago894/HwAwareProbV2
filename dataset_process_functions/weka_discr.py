@@ -77,6 +77,7 @@ def rewite_arff(output_name):
         if sum(features[feat])==0:
             remove_f.append(feat)
 
+    print('There are ', len(features), ' binary features')
     print('Ignoring features ', remove_f)
 
     dataset_dict={}
