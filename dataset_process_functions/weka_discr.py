@@ -12,17 +12,30 @@ def weka_supervised_discr(input_dataset,output_name):
     if not os.path.exists('./datasets/' + output_name):
         os.makedirs('./datasets/' + output_name)
 
-    f = open('./datasets/' + output_name + '/' + output_name + '_bin_weka.arff', 'w')
+    f = open('./datasets/' + output_name + '/' + output_name + 'discr_weka.arff', 'w')
 
     process = subprocess.Popen(
         ['java', '-classpath', weka_location + '/weka.jar',
-         'weka.filters.supervised.attribute.Discretize', '-i', input_dataset, '-c', 'last', '-D', '-R', 'first-last',
+         'weka.filters.supervised.attribute.Discretize', '-i', input_dataset, '-c', 'last', '-R', 'first-last',
          '-precision', '6'],
         stdout=f)
 
-    print("Discretized dataset written to " + '/datasets/' + output_name + '/' + output_name + '_bin_weka.arff')
-
     stdout, stderr = process.communicate()
+
+
+    fb = open('./datasets/' + output_name + '/' + output_name + '_bin_weka.arff', 'w')
+
+
+    process2 = subprocess.Popen(
+        ['java', '-classpath', weka_location + '/weka.jar',
+         'weka.filters.supervised.attribute.NominalToBinary', '-i', './datasets/' + output_name + '/' + output_name + 'discr_weka.arff', '-c', 'last'],stdout=fb)
+
+    stdout, stderr = process2.communicate()
+
+
+    print("Discretized dataset written to " + '/datasets/' + output_name + '/' + output_name + '_discr_weka.arff')
+
+    print("Binarized dataset written to " + '/datasets/' + output_name + '/' + output_name + '_bin_weka.arff')
 
     d_dict=rewite_arff(output_name)
 
@@ -36,10 +49,13 @@ def rewite_arff(output_name):
 
     file_list=functions.read_file(weka_discr)
 
-    # 5 folds is the default
-    folds=5
-
     values=[]
+
+    attr_locs=[line for line in file_list if "@attribute" in line]
+
+    class_values=attr_locs[-1].split(' ')[2].strip('{').strip('}').split(',')
+
+    print(class_values)
 
     for line in file_list:
         if "@attribute" in line:
@@ -54,8 +70,9 @@ def rewite_arff(output_name):
         writer = csv.writer(bin_file, delimiter=',')
         for il,line in enumerate(dataset):
             linelist = line.split(',')
-            writer.writerow([val.index(dat) for dat, val in zip(linelist, values)])
-            dataset_dict[il]=[val.index(dat) for dat, val in zip(linelist, values)]
+            linelist[-1]=class_values.index(linelist[-1])
+            writer.writerow(linelist)
+            dataset_dict[il]=linelist
 
     print('Writing reformatted binarized dataset to ', output_discr)
 
