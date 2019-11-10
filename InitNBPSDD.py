@@ -4,7 +4,6 @@ import sys
 from util import functions
 from operator import itemgetter
 from itertools import groupby
-
 import math
 
 #Run the generate_vtrees_order.py if needed
