@@ -23,7 +23,7 @@ def run(args):
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description='Run the hardware-aware model optimization')
+    parser = argparse.ArgumentParser(description='Binarize datasets and generate folds')
     parser.add_argument('dataset', help='Full dataset')
     parser.add_argument('-o', '--output', type=str, default=None,help='Output name')
 

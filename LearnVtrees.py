@@ -25,8 +25,8 @@ def run(args):
 
         print(os.getcwd())
 
-        train_data_gen='/users/micas/lgalinde/Documents/code_2019/HwAwareProbV2/datasets/australian/' + args.dataset + '_fold' +str(fold)+ '/' + args.dataset + '_fold' + str(fold) + '.train.data'
-        train_data_gen_discr = '/users/micas/lgalinde/Documents/code_2019/HwAwareProbV2/datasets/australian/' + args.dataset + '_fold' + str(
+        train_data_gen='/users/micas/lgalinde/Documents/code_2019/HwAwareProbV2/datasets/' + args.dataset + '/' + args.dataset + '_fold' +str(fold)+ '/' + args.dataset + '_fold' + str(fold) + '.train.data'
+        train_data_gen_discr = '/users/micas/lgalinde/Documents/code_2019/HwAwareProbV2/datasets/' + args.dataset + '/' + args.dataset + '_fold' + str(
             fold) + '/' + args.dataset + '_fold' + str(fold) + '_noclass.train.data'
 
 
@@ -54,7 +54,7 @@ def run(args):
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description='Run the hardware-aware model optimization')
+    parser = argparse.ArgumentParser(description='Learn vtrees')
     parser.add_argument('dataset', help='Dataset name (must be) stored in datasets/dataset/foldx...')
     parser.add_argument('-o', '--output', type=str, default=None,help='Output name')
 
