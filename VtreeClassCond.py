@@ -90,16 +90,17 @@ def run(args):
 
         #Modify the vtree that was learned without the class variable
         vtree=functions.read_file(vtree_discr)
-        modify_vtree(vtree, vtree_discr_final,1)
+        modify_vtree(vtree, vtree_discr_final,int(args.class_num))
 
 
         vtree2=functions.read_file(vtree_discr_cmi)
-        modify_vtree(vtree2, vtree_discr_cmi_final,1)
+        modify_vtree(vtree2, vtree_discr_cmi_final,int(args.class_num))
 
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description='Re-write PSDD to AC and test WMC without evidence')
     parser.add_argument('dataset', help='Dataset name')
+    parser.add_argument('-class_num', '--class_num', type=str, default='1', help='How many class variables are  there')
     args = parser.parse_args(argv)
 
     run(args)

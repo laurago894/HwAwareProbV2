@@ -28,6 +28,8 @@ def generate_folds(dataset_dict,folds,output_name,feature_list,class_list):
             fold) + '/' + output_name + '_fold' + str(fold) + '.train.data'
         fold_train_a = './datasets/' + output_name + '/' + output_name + '_fold' + str(
             fold) + '/' + output_name + '_fold' + str(fold) + '.train.arff'
+        fold_train_a_cmi = './datasets/' + output_name + '/' + output_name + '_fold' + str(
+            fold) + '/' + output_name + '_fold' + str(fold) + '_cmi.train.data'
         fold_train_nc = './datasets/' + output_name + '/' + output_name + '_fold' + str(
             fold) + '/' + output_name + '_fold' + str(fold) + '_noclass.train.data'
         fold_test = './datasets/' + output_name + '/' + output_name + '_fold' + str(
@@ -44,7 +46,7 @@ def generate_folds(dataset_dict,folds,output_name,feature_list,class_list):
         if not os.path.exists('./datasets/' + output_name + '/' + output_name + '_fold' + str(fold)):
             os.makedirs('./datasets/' + output_name + '/' + output_name + '_fold' + str(fold))
 
-        with open(fold_train, mode='w') as train_file, open(fold_train_a, mode='w') as train_file_a, open(fold_train_nc, mode='w') as train_file_nc, \
+        with open(fold_train, mode='w') as train_file, open(fold_train_a, mode='w') as train_file_a, open(fold_train_a_cmi, mode='w') as train_file_a_cmi, open(fold_train_nc, mode='w') as train_file_nc, \
                 open(fold_test, mode='w') as test_file, open(fold_test_a, mode='w') as test_file_a,\
                 open(fold_valid,mode='w') as valid_file,open(fold_valid_a,mode='w') as valid_file_a:
 
@@ -53,6 +55,7 @@ def generate_folds(dataset_dict,folds,output_name,feature_list,class_list):
             writer_valid = csv.writer(valid_file, delimiter=',')
 
             writer_train_a = csv.writer(train_file_a, delimiter=',')
+            writer_train_a_cmi = csv.writer(train_file_a_cmi, delimiter=',')
             writer_test_a = csv.writer(test_file_a, delimiter=',')
             writer_valid_a = csv.writer(valid_file_a, delimiter=',')
 
@@ -103,10 +106,12 @@ def generate_folds(dataset_dict,folds,output_name,feature_list,class_list):
                 if len(class_list) ==2:
                     writer_train_nc.writerow(dataset_dict[sample][:-1])
                     writer_train_a.writerow(dataset_dict[sample])
+                    writer_train_a_cmi.writerow(dataset_dict[sample])
                 else:
                     writer_train_nc.writerow(dataset_dict[sample][:-len(class_list)])
                     cl_li=[dataset_dict[sample][-len(class_list):].index(1)]
                     writer_train_a.writerow(dataset_dict[sample][:-len(class_list)]+cl_li)
+                    writer_train_a_cmi.writerow(dataset_dict[sample][:-len(class_list)] + cl_li)
             for sample in test_samples:
                 writer_test.writerow(dataset_dict[sample])
                 if len(class_list) == 2:

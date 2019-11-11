@@ -28,6 +28,8 @@ def run(args):
         train_data_gen='/users/micas/lgalinde/Documents/code_2019/HwAwareProbV2/datasets/' + args.dataset + '/' + args.dataset + '_fold' +str(fold)+ '/' + args.dataset + '_fold' + str(fold) + '.train.data'
         train_data_gen_discr = '/users/micas/lgalinde/Documents/code_2019/HwAwareProbV2/datasets/' + args.dataset + '/' + args.dataset + '_fold' + str(
             fold) + '/' + args.dataset + '_fold' + str(fold) + '_noclass.train.data'
+        train_data_gen_discr_cmi='/users/micas/lgalinde/Documents/code_2019/HwAwareProbV2/datasets/' + args.dataset + '/' + args.dataset + '_fold' +str(fold)+ '/' + args.dataset + '_fold' + str(fold) + '_cmi.train.data'
+
 
 
         vtree_gen=out_location + args.dataset + '_fold' + str(fold) + '_gen'
@@ -43,7 +45,7 @@ def run(args):
 
         stdout, stderr = process2.communicate()
 
-        process3 = subprocess.Popen(['java','-jar',learner_jar, 'learnVtreeCMI', '-d', train_data_gen, '-o', vtree_discr_cmi])
+        process3 = subprocess.Popen(['java','-jar',learner_jar, 'learnVtreeCMI', '-d', train_data_gen_discr_cmi, '-o', vtree_discr_cmi])
 
         stdout, stderr = process3.communicate()
 
