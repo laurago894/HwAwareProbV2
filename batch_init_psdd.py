@@ -8,7 +8,10 @@ for benchmark in benchmarks:
 
     print('\n\nLearning vtrees from ', benchmark)
 
+    process1=subprocess.Popen(['python', 'VtreeClassCond.py', benchmark])
 
-    process=subprocess.Popen(['python', 'LearnPSDDfromVtree.py', benchmark])
+    stdout1, stderr1 = process1.communicate()
+
+    process=subprocess.Popen(['python', 'InitNBPSDD.py', benchmark])
 
     stdout, stderr = process.communicate()

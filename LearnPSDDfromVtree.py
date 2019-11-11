@@ -5,7 +5,9 @@ import subprocess
 def run(args):
 
     bench_name=args.bench_name
+    # vtree_types = ['gen_mi', 'gen_cmi']
     vtree_types = ['gen','gen_mi', 'gen_cmi']
+
     learner_jar = '/users/micas/lgalinde/Documents/code_2019/PSDDlearn_alt/Scala-LearnPsdd/target/scala-2.11/psdd.jar'
 
     for fold in range(5):
