@@ -56,8 +56,6 @@ def run(args):
 def main(argv=None):
     parser = argparse.ArgumentParser(description='Learn vtrees')
     parser.add_argument('dataset', help='Dataset name (must be) stored in datasets/dataset/foldx...')
-    parser.add_argument('-o', '--output', type=str, default=None,help='Output name')
-
     args = parser.parse_args(argv)
 
     run(args)
