@@ -1,11 +1,14 @@
 import itertools
 import random
 import os, csv
+import random
 
 def generate_folds(dataset_dict,folds,output_name):
 
     fold_size = int(len(dataset_dict) / folds)
-    num_instances = range(len(dataset_dict))
+    num_instances = list(range(len(dataset_dict)))
+    random.shuffle(num_instances)
+
 
     ranges_dict = {}
     fold_num = 0
@@ -18,6 +21,7 @@ def generate_folds(dataset_dict,folds,output_name):
             ranges_dict[fold_num] = list(ra)
 
         fold_num += 1
+
 
     for fold in ranges_dict:
         fold_train = './datasets/' + output_name + '/' + output_name + '_fold' + str(
