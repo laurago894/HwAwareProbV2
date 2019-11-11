@@ -3,7 +3,7 @@ import random
 import os, csv
 import random
 
-def generate_folds(dataset_dict,folds,output_name):
+def generate_folds(dataset_dict,folds,output_name,feature_list,class_list):
 
     fold_size = int(len(dataset_dict) / folds)
     num_instances = list(range(len(dataset_dict)))
@@ -83,25 +83,43 @@ def generate_folds(dataset_dict,folds,output_name):
 
             featnum=len(dataset_dict[0])-1
 
-            for feat in range(featnum):
+            for feat in feature_list:
                 train_file_a.write('@attribute feature_' + str(feat) +' {0,1}\n')
                 test_file_a.write('@attribute feature_' + str(feat) + ' {0,1}\n')
                 valid_file_a.write('@attribute feature_' + str(feat) + ' {0,1}\n')
 
-            train_file_a.write('@attribute class {0,1}\n@data\n\n')
-            test_file_a.write('@attribute class {0,1}\n@data\n\n')
-            valid_file_a.write('@attribute class {0,1}\n@data\n\n')
+            if len(class_list)==2:
+                class_str='{0,1}'
+            else:
+                class_str='{'+ (',').join([str(num) for num in range(0,len(class_list))]) + '}'
+
+            train_file_a.write('@attribute class '+ class_str +'\n@data\n\n')
+            test_file_a.write('@attribute class '+ class_str +'\n@data\n\n')
+            valid_file_a.write('@attribute class '+ class_str +'\n@data\n\n')
 
 
             for sample in train_samples:
                 writer_train.writerow(dataset_dict[sample])
-                writer_train_nc.writerow(dataset_dict[sample][:-1])
-                writer_train_a.writerow(dataset_dict[sample])
+                if len(class_list) ==2:
+                    writer_train_nc.writerow(dataset_dict[sample][:-1])
+                    writer_train_a.writerow(dataset_dict[sample])
+                else:
+                    writer_train_nc.writerow(dataset_dict[sample][:-len(class_list)])
+                    cl_li=[dataset_dict[sample][-len(class_list):].index(1)]
+                    writer_train_a.writerow(dataset_dict[sample][:-len(class_list)]+cl_li)
             for sample in test_samples:
                 writer_test.writerow(dataset_dict[sample])
-                writer_test_a.writerow(dataset_dict[sample])
+                if len(class_list) == 2:
+                    writer_test_a.writerow(dataset_dict[sample])
+                else:
+                    cl_li=[dataset_dict[sample][-len(class_list):].index(1)]
+                    writer_test_a.writerow(dataset_dict[sample][:-len(class_list)]+cl_li)
             for sample in valid_samples:
                 writer_valid.writerow(dataset_dict[sample])
-                writer_valid_a.writerow(dataset_dict[sample])
+                if len(class_list) == 2:
+                    writer_valid_a.writerow(dataset_dict[sample])
+                else:
+                    cl_li=[dataset_dict[sample][-len(class_list):].index(1)]
+                    writer_valid_a.writerow(dataset_dict[sample][:-len(class_list)]+cl_li)
 
     print('Writing folds to ', './datasets/' + output_name + '/' + output_name + '_foldx' )

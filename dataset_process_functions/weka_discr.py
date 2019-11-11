@@ -87,9 +87,12 @@ def rewite_arff(output_name):
         for il,line in enumerate(dataset):
 
             linelist =[num for inum,num in enumerate(line.split(',')) if inum not in remove_f]
+            feature_list=list(range(0,len(linelist)-1))
             if len(class_values)==2:
                 linelist[-1]=class_values.index(linelist[-1])
+                classes_list=[len(linelist)-1]
             else:
+                classes_list = list(range(len(feature_list),len(feature_list)+len(class_values) ))
                 classlist=[0]*len(class_values)
                 classlist[class_values.index(linelist[-1])]=1
                 del linelist[-1]
@@ -98,7 +101,6 @@ def rewite_arff(output_name):
             dataset_dict[il]=linelist
 
     print('Writing reformatted binarized dataset to ', output_discr)
-
-    return dataset_dict
+    return dataset_dict,feature_list,classes_list
 
 

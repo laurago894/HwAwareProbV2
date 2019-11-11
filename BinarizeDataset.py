@@ -14,11 +14,11 @@ from dataset_process_functions import weka_discr, generate_folds
 def run(args):
 
     #Use weka's supervised discretization
-    dataset_dict=weka_discr.weka_supervised_discr(args.dataset,args.output)
+    dataset_dict,feats_list,cl_list=weka_discr.weka_supervised_discr(args.dataset,args.output)
 
     # fold generation
     folds=5
-    generate_folds.generate_folds(dataset_dict, folds, args.output)
+    generate_folds.generate_folds(dataset_dict, folds, args.output,feats_list,cl_list)
 
 
 
