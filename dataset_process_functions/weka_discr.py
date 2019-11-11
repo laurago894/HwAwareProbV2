@@ -87,7 +87,13 @@ def rewite_arff(output_name):
         for il,line in enumerate(dataset):
 
             linelist =[num for inum,num in enumerate(line.split(',')) if inum not in remove_f]
-            linelist[-1]=class_values.index(linelist[-1])
+            if len(class_values)==2:
+                linelist[-1]=class_values.index(linelist[-1])
+            else:
+                classlist=[0]*len(class_values)
+                classlist[class_values.index(linelist[-1])]=1
+                del linelist[-1]
+                linelist=linelist+classlist
             writer.writerow(linelist)
             dataset_dict[il]=linelist
 
