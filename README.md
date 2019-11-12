@@ -56,7 +56,20 @@ Both steps for all datasets:
 python batch_init_psdd.py
 ```
 
-### 4. Accuracy and node count
+### 4. Learn models
+
+Use PSDDlearn to learn models. Initialize on vtrees from previous step for discMI and discCMI:
+
+```
+python LearnPSDDfromVtree.py out_dataset_name
+```
+On all datasets:
+
+```
+python batch_psdd_script.py
+```
+
+### 5. Accuracy and node count
 
 
 Accuracy per fold and learning type:
@@ -70,7 +83,7 @@ For all datasets:
 python batch_accuracy_script.py
 ```
 
-### 5. Comparison with Bayesian Network classifiers
+### 6. Comparison with Bayesian Network classifiers
 
 TO DO
 
