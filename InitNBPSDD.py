@@ -42,16 +42,18 @@ def re_parameter(fname):
 
     cond_parameters[variables[-1]]=[len(negative_loc)/float(len(features[1])),len(positive_loc) / float(len(features[1]))]
 
+    #For Laplace smoothing
+    alpha=0.5
 
     for var in variables[:-1]:
 
         neg_class_instances=itemgetter(*negative_loc)(features[var])
         # neg_neg_class_instances=(len(neg_class_instances)-sum(neg_class_instances)) / float(len(neg_class_instances))
-        pos_neg_class_instances=sum(neg_class_instances) / float(len(neg_class_instances))
+        pos_neg_class_instances=(sum(neg_class_instances)+alpha) / (float(len(neg_class_instances))+2*alpha)
 
         pos_class_instances=itemgetter(*positive_loc)(features[var])
         # neg_pos_class_instances=(len(pos_class_instances)-sum(pos_class_instances)) / float(len(pos_class_instances))
-        pos_pos_class_instances=sum(pos_class_instances) / float(len(pos_class_instances))
+        pos_pos_class_instances=(sum(pos_class_instances)+alpha) / (float(len(pos_class_instances))+2*alpha)
 
 
         cond_parameters[var]=[pos_neg_class_instances,pos_pos_class_instances]  #Pr(var|notclass), Pr(var|class)
