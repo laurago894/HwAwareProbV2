@@ -103,7 +103,7 @@ def generate_folds(dataset_dict,folds,output_name,feature_list,class_list):
 
             for sample in train_samples:
                 writer_train.writerow(dataset_dict[sample])
-                if len(class_list) ==2:
+                if len(class_list) ==1:
                     writer_train_nc.writerow(dataset_dict[sample][:-1])
                     writer_train_a.writerow(dataset_dict[sample])
                     writer_train_a_cmi.writerow(dataset_dict[sample])
@@ -114,14 +114,14 @@ def generate_folds(dataset_dict,folds,output_name,feature_list,class_list):
                     writer_train_a_cmi.writerow(dataset_dict[sample][:-len(class_list)] + cl_li)
             for sample in test_samples:
                 writer_test.writerow(dataset_dict[sample])
-                if len(class_list) == 2:
+                if len(class_list) == 1:
                     writer_test_a.writerow(dataset_dict[sample])
                 else:
                     cl_li=[dataset_dict[sample][-len(class_list):].index(1)]
                     writer_test_a.writerow(dataset_dict[sample][:-len(class_list)]+cl_li)
             for sample in valid_samples:
                 writer_valid.writerow(dataset_dict[sample])
-                if len(class_list) == 2:
+                if len(class_list) == 1:
                     writer_valid_a.writerow(dataset_dict[sample])
                 else:
                     cl_li=[dataset_dict[sample][-len(class_list):].index(1)]

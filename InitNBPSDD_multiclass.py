@@ -146,6 +146,7 @@ def vtree_psdd(dataset,vtree_type,fold,cond_parameters): #Load vtree
     conditional_class_probs = cond_parameters[1]
     feature_variables=cond_parameters[2]
     class_variables=cond_parameters[3]
+    print('Class variables', class_variables)
 
 
     bench_name=dataset

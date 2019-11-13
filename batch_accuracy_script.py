@@ -6,7 +6,7 @@ benchmarks=['corral','credit','diabetes','flare','german','heart','mofn','pima']
 
 for benchmark in benchmarks:
 
-    print('\n\nLearning vtrees from ', benchmark)
+    print('\n\nAccuracy  ', benchmark)
 
 
     process=subprocess.Popen(['python', 'AccuracyCost.py', benchmark])

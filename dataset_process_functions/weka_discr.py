@@ -37,12 +37,12 @@ def weka_supervised_discr(input_dataset,output_name):
 
     print("Binarized dataset written to " + '/datasets/' + output_name + '/' + output_name + '_bin_weka.arff')
 
-    d_dict=rewite_arff(output_name)
+    d_dict=rewrite_arff(output_name)
 
     return d_dict
 
 
-def rewite_arff(output_name):
+def rewrite_arff(output_name):
 
     weka_discr = './datasets/' + output_name + '/' + output_name + '_bin_weka.arff'
     output_discr = './datasets/' + output_name + '/' + output_name + '_bin.csv'
@@ -52,7 +52,6 @@ def rewite_arff(output_name):
     values=[]
 
     attr_locs=[line for line in file_list if "@attribute" in line]
-
     class_values=attr_locs[-1].split(' ')[2].strip('{').strip('}').split(',')
 
     for line in file_list:

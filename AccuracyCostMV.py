@@ -10,8 +10,7 @@ def run(args):
 
     bench_name=args.inputBenchmark
 
-    data_location='./datasets/'
-    vtree_types = ['gen', 'gen_mi', 'gen_cmi']
+    vtree_types = ['gen','gen_mi', 'gen_cmi']
 
     for fold in range(5):
         for vt in vtree_types:
@@ -38,11 +37,10 @@ def run(args):
             print(model_list)
 
             test_file = '/users/micas/lgalinde/Documents/code_2019/HwAwareProbV2/datasets/' + bench_name + '/' + bench_name + '_fold' + str(
-                fold) + '/' + bench_name + '_fold' + str(fold) + '.test.data'
-
-            print('tf',test_file)
+                0) + '/' + bench_name + '_fold' + str(0) + '.test.data'
 
             test=functions.read_file(test_file)
+
             feature_set = list(range(1, len(test[0].split(','))))
 
             for model_t in model_list:
@@ -50,7 +48,7 @@ def run(args):
 
                 ac_model = PSDD_to_AC.convert_psdd('learned_models/psdds/' + bench_name + '/' + bench_name + '_fold'+ str(fold) +'_'+ vt +'/models/'+ model_t[1])
 
-                metrics= performance_est.metric_est(ac_model, test, feature_set)
+                metrics= performance_est.metric_est_mv(ac_model, test, feature_set,int(args.class_num))
                 print('Accuracy', metrics[0])
 
                 writer.writerow([model_t[0]]+metrics)
@@ -59,6 +57,8 @@ def run(args):
 def main(argv=None):
     parser = argparse.ArgumentParser(description='Run the hardware-aware model optimization')
     parser.add_argument('inputBenchmark', help='Provide the name of the benchmark')
+    parser.add_argument('-class_num', '--class_num', type=str, default='1', help='How many class variables are  there')
+
 
     args = parser.parse_args(argv)
 
