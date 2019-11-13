@@ -38,10 +38,10 @@ python batch_vtree_script.py
 
 ### 3. Setting up the initial PSDD
 
-Uses the vtree learning algorithm from learnPSDD <sup>[1](#myfootnote1)</sup> to incrementally learn a model. First, force the class variable to be the prime of the vtree's PSDD:
+Uses the vtree learning algorithm from learnPSDD <sup>[1](#myfootnote1)</sup> to incrementally learn a model. First, force the class variable to be the prime of the vtree's PSDD. Use the class_num arguments for multiclass datasets. For binary, the number of classes should be set to 1 (or the class_num should not be mentioned, its default is set to 1).
 
 ```
-python VtreeClassCond.py out_dataset_name
+python VtreeClassCond.py out_dataset_name -class_num x
 ```
 
 For discMI and discCMI, generate an initial PSDD, where feature variables are conditioned on the class variable (i.e. a naive Bayes like structure):
@@ -50,7 +50,13 @@ For discMI and discCMI, generate an initial PSDD, where feature variables are co
 python InitNBPSDD.py out_dataset_name
 ```
 
-Both steps for all datasets:
+For multiclass datasets:
+
+```
+python InitNBPSDD_multiclass.py out_dataset_name -class_num x
+```
+
+Both steps for all datasets (only supports binary class datasets for now):
 
 ```
 python batch_init_psdd.py
@@ -77,13 +83,29 @@ Accuracy per fold and learning type:
 ```
 python AccuracyCost.py out_dataset_name
 ```
-For all datasets:
+
+For multiclass datasets:
+
+```
+python AccuracyCostMV.py out_dataset_name -class_num x
+```
+
+For all datasets (supports only binary classes for now):
 
 ```
 python batch_accuracy_script.py
 ```
 
-### 6. Comparison with Bayesian Network classifiers
+### 6. Accuracy and node count
+
+Full pipeline for binary classification datasets (like in all "batch" scripts, the names of the datasets are hardcoded, change if desired):
+
+```
+python batch_all_binary_class.py
+```
+
+
+### 7. Comparison with Bayesian Network classifiers
 
 TO DO
 
