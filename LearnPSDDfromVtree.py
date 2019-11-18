@@ -5,8 +5,8 @@ import subprocess
 def run(args):
 
     bench_name=args.bench_name
-    # vtree_types = ['gen_mi', 'gen_cmi']
-    vtree_types = ['gen','gen_mi', 'gen_cmi']
+    vtree_types = ['gen_cmi']
+    # vtree_types = ['gen','gen_mi', 'gen_cmi']
 
     learner_jar = '/users/micas/lgalinde/Documents/code_2019/PSDDlearn_alt/Scala-LearnPsdd/target/scala-2.11/psdd.jar'
 
@@ -36,9 +36,20 @@ def run(args):
 
             else:
 
+                # init_psdd='/users/micas/lgalinde/Documents/code_2019/HwAwareProbV2/learned_models/psdds/'+ bench_name +'/'+ bench_name +'_fold' + str(fold) + '_'+ vtree_type +'_init.psdd'
+                #
+                # command = 'java -jar '+ learner_jar +' learnPsdd search -m l-1 -d ' + train + ' -b ' + valid + ' -t ' + test + ' -v ' + vtree_name + ' -o ' + out_location + ' -p ' + init_psdd
+                # print(command)
+                #
+                # code = subprocess.call(command, shell=True)
+
+
+                out_location2 = '/users/micas/lgalinde/Documents/code_2019/HwAwareProbV2/learned_models/psdds/' + bench_name + '/' + bench_name + '_fold' + str(
+                    fold) + '_' + vtree_type + '_factorized_init/'
+
                 init_psdd='/users/micas/lgalinde/Documents/code_2019/HwAwareProbV2/learned_models/psdds/'+ bench_name +'/'+ bench_name +'_fold' + str(fold) + '_'+ vtree_type +'_init.psdd'
 
-                command = 'java -jar '+ learner_jar +' learnPsdd search -m l-1 -d ' + train + ' -b ' + valid + ' -t ' + test + ' -v ' + vtree_name + ' -o ' + out_location + ' -p ' + init_psdd
+                command = 'java -jar '+ learner_jar +' learnPsdd search -m l-1 -d ' + train + ' -b ' + valid + ' -t ' + test + ' -v ' + vtree_name + ' -o ' + out_location2
                 print(command)
 
                 code = subprocess.call(command, shell=True)

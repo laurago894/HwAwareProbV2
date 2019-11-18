@@ -21,7 +21,6 @@ def run(args):
     generate_folds.generate_folds(dataset_dict, folds, args.output,feats_list,cl_list)
 
 
-
 def main(argv=None):
     parser = argparse.ArgumentParser(description='Binarize datasets and generate folds')
     parser.add_argument('dataset', help='Full dataset')

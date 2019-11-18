@@ -12,6 +12,7 @@ def run(args):
 
     data_location='./datasets/'
     vtree_types = ['gen', 'gen_mi', 'gen_cmi']
+    # vtree_types = ['gen_mi']
 
     for fold in range(5):
         for vt in vtree_types:

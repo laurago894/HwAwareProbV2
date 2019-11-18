@@ -1,5 +1,6 @@
 from inference_functions import ac_inference
 import sys
+import random
 
 
 def accuracy_estimation_mc(validation_set,indicator_dict,variable_list,NodesEv,init_weight,
@@ -217,3 +218,53 @@ def metric_est_mv(model,dataset,observed_features,nclasses):
     mult_num = sum([1 * len(ac.split(' ')) - 3 - 1 + 1 for ac in content_ac if 'A' in ac])
 
     return [acc,par_num,add_num,mult_num]
+
+
+def metric_est_feature_fail(model,dataset,observed_features,fail_sets):
+
+
+    content_ac=model[0]
+    lmap_id=model[1]
+    lmap_w=model[2]
+    indicator_dict = model[5]
+    variable_list=model[6]
+
+
+    class_num = len(dataset[0].split(','))
+    thres=0.5
+
+    NodesEv = observed_features+[class_num]
+
+    obs_var_num = NodesEv
+    obs_var_den = observed_features
+
+    classes = [0, 1]
+
+    init_weight = ac_inference.init_weight(content_ac, lmap_id, lmap_w)
+
+    operations_index, operation =ac_inference.extract_operations(content_ac)
+
+    accs_fail={}
+
+    for fail in fail_sets:
+
+        nfail = round(len(obs_var_den) * fail)
+        print(nfail, ' features fail')
+
+        accs=[]
+
+        for trial in range(10):
+
+            fi = random.sample(range(0, len(obs_var_num) - 1), int(nfail))
+            print(fi)
+            num_reduced = [num for ii, num in enumerate(obs_var_num) if ii not in fi]
+            den_reduced = [num for ii, num in enumerate(obs_var_den) if ii not in fi]
+
+
+            acc=accuracy_estimation(dataset, indicator_dict, variable_list, den_reduced, init_weight,
+                            operations_index, operation, content_ac, classes, num_reduced, thres)
+
+            accs.append(acc)
+        accs_fail[fail]=accs
+
+    return accs_fail
