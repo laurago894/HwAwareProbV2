@@ -11,7 +11,7 @@ def run(args):
     bench_name=args.inputBenchmark
 
     data_location='./datasets/'
-    vtree_types = ['gen', 'gen_mi', 'gen_cmi']
+    vtree_types = ['gen_cmi']
     # vtree_types = ['gen_mi']
 
     for fold in range(5):
@@ -22,7 +22,7 @@ def run(args):
             if not os.path.exists(result_dir):
                 os.makedirs(result_dir)
 
-            result_file= result_dir + 'output_' + bench_name + '_fold' + str(fold) + '_' + vt + '.csv'
+            result_file= result_dir + 'train_output_' + bench_name + '_fold' + str(fold) + '_' + vt + '.csv'
 
             res_f=open(result_file,'w')
             res_f.write('Model,Accuracy,Params,Mults,Adds\n')
@@ -38,8 +38,11 @@ def run(args):
 
             print(model_list)
 
+            # test_file = '/users/micas/lgalinde/Documents/code_2019/HwAwareProbV2/datasets/' + bench_name + '/' + bench_name + '_fold' + str(
+            #     fold) + '/' + bench_name + '_fold' + str(fold) + '.test.data'
+
             test_file = '/users/micas/lgalinde/Documents/code_2019/HwAwareProbV2/datasets/' + bench_name + '/' + bench_name + '_fold' + str(
-                fold) + '/' + bench_name + '_fold' + str(fold) + '.test.data'
+                fold) + '/' + bench_name + '_fold' + str(fold) + '.train.data'
 
             print('tf',test_file)
 
