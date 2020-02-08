@@ -10,13 +10,16 @@ def run(args):
 
     bench_name=args.inputBenchmark
 
-    vtree_types = ['gen', 'gen_mi', 'gen_cmi']
+    vtree_types = ['gen', 'gen_cmi']
 
-    fail_sets = [0.5, 0.25, 0.125]
+    # fail_sets = [0.5, 0.25, 0.125]
+    fail_sets = [0.125]
+
     for vt in vtree_types:
 
         #Open file with best model per type
-        csv_reader = csv.reader(open('results/' + bench_name + '/best_fold/' + bench_name + '_' + vt + '_unrestricted.csv'), delimiter=',')
+        # csv_reader = csv.reader(open('results/' + bench_name + '/best_fold/' + bench_name + '_' + vt + '_restricted.csv'), delimiter=',')
+        csv_reader = csv.reader(open('results/' + bench_name + '/best_fold/train_tuned_' + bench_name + '_' + vt + '.csv'), delimiter=',')
 
         models=[]
         for row in csv_reader:
@@ -33,7 +36,9 @@ def run(args):
             if not os.path.exists(result_dir):
                 os.makedirs(result_dir)
 
-            result_file= result_dir + 'fail_output_' + bench_name + '_fold' + str(fold) + '_' + vt + '.csv'
+            # result_file= result_dir + 'fail_output_' + bench_name + '_fold' + str(fold) + '_' + vt + '.csv'
+
+            result_file= result_dir + 'train_tuned_fail_output_' + bench_name + '_fold' + str(fold) + '_' + vt + '.csv'
 
             res_f=open(result_file,'w')
 
