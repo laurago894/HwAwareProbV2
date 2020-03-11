@@ -10,6 +10,7 @@ for benchmark in benchmarks:
 
     in_dataset=dataset_location+benchmark+'/'+benchmark+'.arff'
 
-    process=subprocess.Popen(['python', 'BinarizeDataset.py', in_dataset, '-o', benchmark])
+    # process=subprocess.Popen(['python', 'BinarizeDataset.py', in_dataset, '-o', benchmark])
+    process = subprocess.Popen(['python', 'BinarizeDataset.py', in_dataset, '-o', benchmark+'_single','-f','1'])
 
     stdout, stderr = process.communicate()

@@ -17,7 +17,7 @@ def run(args):
     dataset_dict,feats_list,cl_list=weka_discr.weka_supervised_discr(args.dataset,args.output)
 
     # fold generation
-    folds=5
+    folds=int(args.folds)
     generate_folds.generate_folds(dataset_dict, folds, args.output,feats_list,cl_list)
 
 
@@ -25,6 +25,7 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description='Binarize datasets and generate folds')
     parser.add_argument('dataset', help='Full dataset')
     parser.add_argument('-o', '--output', type=str, default=None,help='Output name')
+    parser.add_argument('-f', '--folds', type=str, default=None, help='How many folds')
 
     args = parser.parse_args(argv)
 
