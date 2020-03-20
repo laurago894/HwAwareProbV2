@@ -177,9 +177,9 @@ def vtree_psdd(bench_name,fold,vtree_type,cond_parameters):
 def run(args):
 
     bench_name=args.bench_name
-    vtree_types = ['gen_mi', 'gen_cmi']
+    vtree_types = ['gen_cmi']
 
-    for fold in range(5):
+    for fold in range(int(args.folds)):
 
         dataset_name='./datasets/' + bench_name +'/'+ bench_name +'_fold' + str(fold) +'/'+ bench_name +'_fold' + str(fold) + '.train.data'
 
@@ -192,6 +192,7 @@ def run(args):
 def main(argv=None):
     parser = argparse.ArgumentParser(description='Generate initial PSDD with naive Bayes like structure')
     parser.add_argument('bench_name', help='Provide the name of the benchmark')
+    parser.add_argument('-f', '--folds', type=str, default=None, help='How many folds')
 
 
     args = parser.parse_args(argv)

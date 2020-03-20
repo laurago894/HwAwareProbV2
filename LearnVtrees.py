@@ -13,7 +13,7 @@ def run(args):
     learner_jar='/users/micas/lgalinde/Documents/code_2019/PSDDlearn_alt/Scala-LearnPsdd/target/scala-2.11/psdd.jar'
     out_location='/users/micas/lgalinde/Documents/code_2019/HwAwareProbV2/learned_models/vtrees/' + args.dataset + '/'
 
-    folds=5
+    folds=int(args.folds)
 
     if not os.path.exists(out_location):
         os.makedirs(out_location)
@@ -58,6 +58,7 @@ def run(args):
 def main(argv=None):
     parser = argparse.ArgumentParser(description='Learn vtrees')
     parser.add_argument('dataset', help='Dataset name (must be) stored in datasets/dataset/foldx...')
+    parser.add_argument('-f', '--folds', type=str, default=None, help='How many folds')
     args = parser.parse_args(argv)
 
     run(args)

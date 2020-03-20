@@ -80,7 +80,7 @@ def run(args):
 
     out_location='/users/micas/lgalinde/Documents/code_2019/HwAwareProbV2/learned_models/vtrees/' + args.dataset + '/'
 
-    for fold in range(5):
+    for fold in range(int(args.folds)):
 
         vtree_discr = out_location + args.dataset + '_fold' + str(fold) + '_gen_mi_noclass.vtree'
         vtree_discr_cmi = out_location + args.dataset + '_fold' + str(fold) + '_gen_cmi_noclass.vtree'
@@ -101,6 +101,7 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description='Re-write PSDD to AC and test WMC without evidence')
     parser.add_argument('dataset', help='Dataset name')
     parser.add_argument('-class_num', '--class_num', type=str, default='1', help='How many class variables are  there')
+    parser.add_argument('-f', '--folds', type=str, default=None, help='How many folds')
     args = parser.parse_args(argv)
 
     run(args)
