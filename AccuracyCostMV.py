@@ -12,7 +12,7 @@ def run(args):
 
     vtree_types = ['gen_cmi']
 
-    for fold in range(5):
+    for fold in range(int(args.folds)):
         for vt in vtree_types:
 
             result_dir='./results/' + bench_name + '/'
@@ -58,6 +58,7 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description='Run the hardware-aware model optimization')
     parser.add_argument('inputBenchmark', help='Provide the name of the benchmark')
     parser.add_argument('-class_num', '--class_num', type=str, default='1', help='How many class variables are  there')
+    parser.add_argument('-f', '--folds', type=str, default=None, help='How many folds')
 
 
     args = parser.parse_args(argv)
