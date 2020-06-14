@@ -159,8 +159,8 @@ def prune_psdd(invtree,inpsdd,variables_prune,outpsdd):
                     print('To replace is ', to_replace)
                     print('Other child is ', other_childpsdd)
                     if other_childpsdd in positive_L and len(line.split(' '))>7:
-                        flag_tnode_modify.append(str(to_replace))
-                        flag_tnode_modify.append(rep)
+                        flag_tnode_modify.append([str(to_replace),rep])
+                        # flag_tnode_modify.append(rep)
                         print('Flagged T node to be modified ', flag_tnode_modify)
                     print('OCH ', other_child in positive_L)
 
@@ -238,57 +238,58 @@ def prune_psdd(invtree,inpsdd,variables_prune,outpsdd):
         #modify the flagged true nodes -- this will be needed if after pruning the remaining child is a true node with conditional probability
         # flag_tnode_modify
         if flag_tnode_modify:
-            print('\n\nModifying relevant T nodes')
-            cond_params={}
-            for line in full_psdd:
+            for node_mod in flag_tnode_modify:
+                print('\n\nModifying relevant T nodes')
+                cond_params={}
+                for line in full_psdd:
 
-                if line.split(' ')[0]!='c' and line.split(' ')[0]!='psdd':
-                    # print(line)
-                    # print(flag_tnode_modify)
-                    # print(line.split(' ')[1])
-                    # print(int(line.split(' ')[1]) in flag_tnode_modify[1],int(line.split(' ')[1]),flag_tnode_modify[1])
-                    if int(line.split(' ')[1]) in flag_tnode_modify[1]:
-                    # if line.split(' ')[1]==str(flag_tnode_modify[1][0]) or line.split(' ')[1]==str(flag_tnode_modify[1][1]):
-                        cond_params[line.split(' ')[1]]=line.split(' ')[-1]
-                    if line.split(' ')[1]==flag_tnode_modify[0]:
-                        tnode_change=line
+                    if line.split(' ')[0]!='c' and line.split(' ')[0]!='psdd':
+                        # print(line)
+                        # print(flag_tnode_modify)
+                        # print(line.split(' ')[1])
+                        # print(int(line.split(' ')[1]) in flag_tnode_modify[1],int(line.split(' ')[1]),flag_tnode_modify[1])
+                        if int(line.split(' ')[1]) in node_mod[1]:
+                        # if line.split(' ')[1]==str(flag_tnode_modify[1][0]) or line.split(' ')[1]==str(flag_tnode_modify[1][1]):
+                            cond_params[line.split(' ')[1]]=line.split(' ')[-1]
+                        if line.split(' ')[1]==node_mod[0]:
+                            tnode_change=line
 
-            print('Cond params ', cond_params)
-            print(flag_tnode_modify)
-            dnode=[]
-            print('Decision node of interest', replacements_back[flag_tnode_modify[0]])
-            for ii in range(int((len(replacements_back[flag_tnode_modify[0]].split(' '))-4)/3)):
-                dn=replacements_back[flag_tnode_modify[0]].split(' ')[4+(3*ii):4+(3*ii)+3]
-                print(dn,positive_L)
-                if str(positive_L[0]) in dn:
-                    for node in dn[0:2]:
-                        if node in cond_params:
-                            positive_cond_param=math.exp(float(cond_params[node]))
+                print('Cond params ', cond_params)
+                print(node_mod)
+                dnode=[]
+                print('Decision node of interest', replacements_back[node_mod[0]])
+                for ii in range(int((len(replacements_back[node_mod[0]].split(' '))-4)/3)):
+                    dn=replacements_back[node_mod[0]].split(' ')[4+(3*ii):4+(3*ii)+3]
+                    print(dn,positive_L)
+                    if str(positive_L[0]) in dn:
+                        for node in dn[0:2]:
+                            if node in cond_params:
+                                positive_cond_param=math.exp(float(cond_params[node]))
 
-                if str(negative_L[0]) in dn:
-                    for node in dn[0:2]:
-                        if node in cond_params:
-                            negative_cond_param = math.exp(float(cond_params[node]))
+                    if str(negative_L[0]) in dn:
+                        for node in dn[0:2]:
+                            if node in cond_params:
+                                negative_cond_param = math.exp(float(cond_params[node]))
 
-                if sum([1 for nn in dn if nn in [str(ni) for ni in positive_L]])>0: #this is the positive variable:
-                    pos_parent_param=math.exp(float(dn[2]))
-                    print(pos_parent_param)
-                if sum([1 for nn in dn if nn in [str(ni) for ni in negative_L]])>0: #this is the positive variable:
-                    neg_parent_param=math.exp(float(dn[2]))
-                    print(neg_parent_param)
+                    if sum([1 for nn in dn if nn in [str(ni) for ni in positive_L]])>0: #this is the positive variable:
+                        pos_parent_param=math.exp(float(dn[2]))
+                        print(pos_parent_param)
+                    if sum([1 for nn in dn if nn in [str(ni) for ni in negative_L]])>0: #this is the positive variable:
+                        neg_parent_param=math.exp(float(dn[2]))
+                        print(neg_parent_param)
 
 
-            print('parent params ', pos_parent_param,neg_parent_param)
-            print(cond_params)
-            print('conditional params',positive_cond_param,negative_cond_param)
+                print('parent params ', pos_parent_param,neg_parent_param)
+                print(cond_params)
+                print('conditional params',positive_cond_param,negative_cond_param)
 
-            new_pos_param=(positive_cond_param*pos_parent_param)+(negative_cond_param*neg_parent_param)
-            print('New param is ', math.log(new_pos_param))
-            print(tnode_change)
-            newnode=tnode_change.split(' ')
-            print(newnode)
-            newnode[-1]=str(math.log(new_pos_param))
-            nodes_replacement[tnode_change]=' '.join(newnode)
+                new_pos_param=(positive_cond_param*pos_parent_param)+(negative_cond_param*neg_parent_param)
+                print('New param is ', math.log(new_pos_param))
+                print(tnode_change)
+                newnode=tnode_change.split(' ')
+                print(newnode)
+                newnode[-1]=str(math.log(new_pos_param))
+                nodes_replacement[tnode_change]=' '.join(newnode)
 
         # #Change L to T nodes if needed
         # if L_node_to_true:
