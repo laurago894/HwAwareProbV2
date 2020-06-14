@@ -169,10 +169,11 @@ def prune_psdd(invtree,inpsdd,variables_prune,outpsdd):
                     if len(children_parent_decision)>2:
                         print('From parent ', line, 'momdify new pointer to be true')
                         potential_replace=[ch for ch in children_parent_decision if ch not in psdd_nodes_T_remove+psdd_nodes_L_remove]
+                        print('Potential replace ', potential_replace)
                         #which of the potential replacements is positive leaf
                         for chline in full_psdd:
                             if chline.split(' ')[0]=='L' and int(chline.split(' ')[1]) in potential_replace:
-                                if chline.split(' ')[-1]=='1':
+                                if '-' not in chline.split(' ')[-1]:
                                     tr=chline
                                     replace_flag = 0
                         if replace_flag==0:
