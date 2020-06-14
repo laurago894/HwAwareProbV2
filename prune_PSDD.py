@@ -158,7 +158,7 @@ def prune_psdd(invtree,inpsdd,variables_prune,outpsdd):
 
                     print('To replace is ', to_replace)
                     print('Other child is ', other_childpsdd)
-                    if other_childpsdd in positive_L:
+                    if other_childpsdd in positive_L and len(line.split(' '))>7:
                         flag_tnode_modify.append(str(to_replace))
                         flag_tnode_modify.append(rep)
                         print('Flagged T node to be modified ', flag_tnode_modify)
@@ -238,16 +238,22 @@ def prune_psdd(invtree,inpsdd,variables_prune,outpsdd):
         #modify the flagged true nodes -- this will be needed if after pruning the remaining child is a true node with conditional probability
         # flag_tnode_modify
         if flag_tnode_modify:
+            print('\n\nModifying relevant T nodes')
             cond_params={}
             for line in full_psdd:
 
                 if line.split(' ')[0]!='c' and line.split(' ')[0]!='psdd':
-                    print(line)
-                    if line.split(' ')[1]==str(flag_tnode_modify[1][0]) or line.split(' ')[1]==str(flag_tnode_modify[1][1]):
+                    # print(line)
+                    # print(flag_tnode_modify)
+                    # print(line.split(' ')[1])
+                    # print(int(line.split(' ')[1]) in flag_tnode_modify[1],int(line.split(' ')[1]),flag_tnode_modify[1])
+                    if int(line.split(' ')[1]) in flag_tnode_modify[1]:
+                    # if line.split(' ')[1]==str(flag_tnode_modify[1][0]) or line.split(' ')[1]==str(flag_tnode_modify[1][1]):
                         cond_params[line.split(' ')[1]]=line.split(' ')[-1]
                     if line.split(' ')[1]==flag_tnode_modify[0]:
                         tnode_change=line
 
+            print('Cond params ', cond_params)
             print(flag_tnode_modify)
             dnode=[]
             print('Decision node of interest', replacements_back[flag_tnode_modify[0]])
@@ -299,7 +305,7 @@ def prune_psdd(invtree,inpsdd,variables_prune,outpsdd):
             print('to')
             print(nodes_replacement[node],'\n')
 
-        print('\nNodes to remove', all_lines_to_remove)
+        print('\nNodes to remove')
 
         for node_change in nodes_replacement:
             idx=full_psdd.index(node_change)
@@ -312,6 +318,7 @@ def prune_psdd(invtree,inpsdd,variables_prune,outpsdd):
         for node_remove in all_lines_to_remove:
             # print('Check 1 ',node_remove in full_psdd)
             if node_remove in full_psdd:
+                print(node_remove)
                 full_psdd.pop(full_psdd.index(node_remove))
             # print('Check 2 ', node_remove in full_psdd)
 
