@@ -57,11 +57,12 @@ def prune_psdd(invtree,inpsdd,variables_prune,outpsdd):
     vtree_nodes.sort(reverse=True)
     print(vtree_nodes)
 
-    for vtree_node in vtree_nodes:
+    for var_to_prune,vtree_node in zip(var_prune,vtree_nodes):
         nodes_replacement = {}
         psdd_nodes_T_remove=[]
         psdd_nodes_L_remove = []
         potential_L_lines_remove=[]
+        potential_T_lines_remove = []
         positive_L=[]
         negative_L = []
         all_lines_to_remove=[]
@@ -98,6 +99,7 @@ def prune_psdd(invtree,inpsdd,variables_prune,outpsdd):
                 if int(line.split(' ')[2]) == vtree_node:
                     # print('TO remove line ',line)
                     psdd_nodes_T_remove.append(int(line.split(' ')[1]))
+                    potential_T_lines_remove.append(line)
                     all_lines_to_remove.append(line)
             if line.split(' ')[0] == 'L':
                 # print(int(line.split(' ')[2]),vtree_node)
@@ -113,13 +115,17 @@ def prune_psdd(invtree,inpsdd,variables_prune,outpsdd):
         print('PSDD L nodes to remove ', psdd_nodes_L_remove, '\n')
 
         # save then in aux variable because we need to know whose sibling we keep and we need to modify that sibling's params
-        positive_L=positive_L+ [int(pl.split(' ')[1]) for pl in potential_L_lines_remove if pl.split(' ')[-1]=='1']
-        negative_L = negative_L + [pl.split(' ')[1] for pl in potential_L_lines_remove if pl.split(' ')[-1] == '-1']
-        print('positive L (keep the true node that is sibling to this node but modify params)', positive_L)
+        #but this only makes sense if the parents of positiveL and negative L were not deterministic
+        # print('Potential L lines remove ', potential_L_lines_remove)
+        # print(parent)
+        # positive_L=positive_L+ [int(pl.split(' ')[1]) for pl in potential_L_lines_remove if pl.split(' ')[-1]=='1']
+        # negative_L = negative_L + [pl.split(' ')[1] for pl in potential_L_lines_remove if pl.split(' ')[-1] == '-1']
+        # print('positive L (keep the true node that is sibling to this node but modify params)', positive_L,'\n')
 
 
 
         flag_tnode_modify=[]
+        L_node_to_true=[]
         replacements={}
         replacements_back = {}
         # print('\n\n')
@@ -127,8 +133,20 @@ def prune_psdd(invtree,inpsdd,variables_prune,outpsdd):
 
             if line.split(' ')[0] == 'D':
                 if int(line.split(' ')[2]) == parent:
-                    # print('Parent line ', line)
+                    print('\nParent line ', line)
+                    replace_flag = 1
+                    #Check if we will have to modify the surviving sibling (when decision node parent is not deterministic we have to reparametrize)
+                    if len(line.split(' '))>7:
+                        print('Potential L lines remove ', potential_L_lines_remove)
+                        positive_L = positive_L + [int(pl.split(' ')[1]) for pl in potential_L_lines_remove if
+                                                   pl.split(' ')[-1] == str(var_to_prune)]
+                        negative_L = negative_L + [pl.split(' ')[1] for pl in potential_L_lines_remove if
+                                                   pl.split(' ')[-1] == '-'+str(var_to_prune)]
+                        print('Positive L is ', positive_L)
                     all_lines_to_remove.append(line)
+                    # for ii in range(int((len(lines) - 4) / 3)):
+                    #     children_grandparent_decision=children_grandparent_decision+lines[4 + (3 * ii): 4 + (3 * ii) + 3]
+
                     if len(line.split(' '))>7:
                         children_parent_decision = [int(ch) for ch in line.split(' ')[4:6]+line.split(' ')[7:9]]
                     else:
@@ -143,13 +161,43 @@ def prune_psdd(invtree,inpsdd,variables_prune,outpsdd):
                     if other_childpsdd in positive_L:
                         flag_tnode_modify.append(str(to_replace))
                         flag_tnode_modify.append(rep)
+                        print('Flagged T node to be modified ', flag_tnode_modify)
                     print('OCH ', other_child in positive_L)
-                    replacements[line.split(' ')[1]]=str(to_replace)
-                    replacements_back[str(to_replace)] =line
+
+                    #when replacing a mult-children decision node with a leaf node, we must modify that leaf node to a true node
+                    #with the paraneters from the replaced decision node
+                    if len(children_parent_decision)>2:
+                        print('From parent ', line, 'momdify new pointer to be true')
+                        potential_replace=[ch for ch in children_parent_decision if ch not in psdd_nodes_T_remove+psdd_nodes_L_remove]
+                        #which of the potential replacements is positive leaf
+                        for chline in full_psdd:
+                            if chline.split(' ')[0]=='L' and int(chline.split(' ')[1]) in potential_replace:
+                                if chline.split(' ')[-1]=='1':
+                                    tr=chline
+                                    replace_flag = 0
+                        if replace_flag==0:
+                            print('Will modify l node ', tr)
+                            #params of the decision node (it would make sense that this decision node only has two children...)
+                            if int(tr.split(' ')[1]) in children_parent_decision[0:2]:
+                                new_param=line.split(' ')[6]
+                            elif int(tr.split(' ')[1]) in children_parent_decision[2:]:
+                                print(line.split(' ')[9])
+
+                            mod_lnode=tr.split(' ')
+                            mod_lnode[0]='T'
+                            mod_lnode[1]=line.split(' ')[1]
+                            mod_lnode.append(new_param)
+                            nodes_replacement[line]=' '.join(mod_lnode)
+                            print('Will now replace ',line, ' with  ', mod_lnode)
+                    if replace_flag:
+                        replacements[line.split(' ')[1]]=str(to_replace)
+                        replacements_back[str(to_replace)] =line
+                        print('We will replace ',line.split(' ')[1], 'with ', str(to_replace))
         print('Replacements are ', replacements)
         print('pisitive L', positive_L)
 
         print('flag tnode modify',flag_tnode_modify)
+        print('L node to modify ', L_node_to_true)
 
 
 
@@ -163,38 +211,37 @@ def prune_psdd(invtree,inpsdd,variables_prune,outpsdd):
 
                     #1 child or two children
                     #children psdd nodes:
-                    if len(lines)>7:
-                        children_grandparent_decision = lines[4:6] + lines[7:9]
-                    else:
-                        children_grandparent_decision=lines[4:6]
+                    children_grandparent_decision=[]
+                    print('Range is ', range(int((len(lines) - 4) / 3)))
+                    for ii in range(int((len(lines) - 4) / 3)):
+                        print(lines[4 + (3 * ii): 4 + (3 * ii) + 2])
+                        children_grandparent_decision=children_grandparent_decision+lines[4 + (3 * ii): 4 + (3 * ii) + 2]
 
-                    # print(children_grandparent_decision)
                     for ich,ch in enumerate(children_grandparent_decision):
                         if ch in replacements:
                             #check if replacement was for t or L node, if it was for t we will need to modify the sibling t node
                             children_grandparent_decision[ich]=replacements[children_grandparent_decision[ich]]
 
-                    # if children_grandparent_decision[0] in replacements:
-                    #     children_grandparent_decision[0]=replacements[children_grandparent_decision[0]]
-                    # if children_grandparent_decision[1] in replacements:
-                    #     children_grandparent_decision[1] = replacements[children_grandparent_decision[1]]
-                    # print(children_grandparent_decision)
-                    if len(lines) > 7:
-                        lines[4:6]=children_grandparent_decision[0:2]
-                        lines[7:9] = children_grandparent_decision[2:]
-                    else:
-                        lines[4:6] = children_grandparent_decision
+                    print('children gp decision', children_grandparent_decision)
+
+                    for ii in range(int((len(lines) - 4) / 3)):
+                        lines[4 + (3 * ii): 4 + (3 * ii) + 2]=children_grandparent_decision[(2*ii):(2*ii)+2]
+                    # if len(lines) > 7:
+                    #     lines[4:6]=children_grandparent_decision[0:2]
+                    #     lines[7:9] = children_grandparent_decision[2:]
+                    # else:
+                    #     lines[4:6] = children_grandparent_decision
                     st=' '.join(lines)
                     nodes_replacement[line]=st
 
-        #modify the flagged true nodes
+        #modify the flagged true nodes -- this will be needed if after pruning the remaining child is a true node with conditional probability
         # flag_tnode_modify
-
         if flag_tnode_modify:
             cond_params={}
             for line in full_psdd:
 
-                if line.split(' ')[0]!='c' and line.split(' ')[0]!='vtree':
+                if line.split(' ')[0]!='c' and line.split(' ')[0]!='psdd':
+                    print(line)
                     if line.split(' ')[1]==str(flag_tnode_modify[1][0]) or line.split(' ')[1]==str(flag_tnode_modify[1][1]):
                         cond_params[line.split(' ')[1]]=line.split(' ')[-1]
                     if line.split(' ')[1]==flag_tnode_modify[0]:
@@ -236,21 +283,35 @@ def prune_psdd(invtree,inpsdd,variables_prune,outpsdd):
             newnode[-1]=str(math.log(new_pos_param))
             nodes_replacement[tnode_change]=' '.join(newnode)
 
+        # #Change L to T nodes if needed
+        # if L_node_to_true:
+        #     for line in full_psdd:
+        #         if line.split(' ')[0]!='c' and line.split(' ')[0]!='psdd':
+        #             print(line)
+        #             if line.split(' ')[1]==str(flag_tnode_modify[1][0]) or line.split(' ')[1]==str(flag_tnode_modify[1][1]):
+        #
+
         print('\n')
-        print('Nodes to modify ', nodes_replacement)
-        print('Nodes to remove', all_lines_to_remove)
+        print('Nodes to modify ')
+        for node in nodes_replacement:
+            print(node)
+            print('to')
+            print(nodes_replacement[node],'\n')
+
+        print('\nNodes to remove', all_lines_to_remove)
 
         for node_change in nodes_replacement:
             idx=full_psdd.index(node_change)
-            print(full_psdd.index(node_change))
-            print(node_change)
-            print(full_psdd[full_psdd.index(node_change)])
+            # print(full_psdd.index(node_change))
+            # print(node_change)
+            # print(full_psdd[full_psdd.index(node_change)])
             full_psdd[full_psdd.index(node_change)]=nodes_replacement[node_change]
-            print(full_psdd[idx])
+            # print(full_psdd[idx])
 
         for node_remove in all_lines_to_remove:
             # print('Check 1 ',node_remove in full_psdd)
-            full_psdd.pop(full_psdd.index(node_remove))
+            if node_remove in full_psdd:
+                full_psdd.pop(full_psdd.index(node_remove))
             # print('Check 2 ', node_remove in full_psdd)
 
         # print('\n\nleaf nodes ', leaf_nodes)
@@ -274,7 +335,6 @@ def prune_psdd(invtree,inpsdd,variables_prune,outpsdd):
         # print('internal children ',internal_children)
         # print('leaf parents ', leaf_parents)
 
-    print(type(full_psdd[0]))
     outpsddfile=open(outpsdd,'w')
     for line in full_psdd:
         # print(line)
