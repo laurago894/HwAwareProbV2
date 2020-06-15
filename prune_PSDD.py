@@ -227,77 +227,95 @@ def prune_psdd(invtree,inpsdd,variables_prune,outpsdd):
 
                     for ii in range(int((len(lines) - 4) / 3)):
                         lines[4 + (3 * ii): 4 + (3 * ii) + 2]=children_grandparent_decision[(2*ii):(2*ii)+2]
-                    # if len(lines) > 7:
-                    #     lines[4:6]=children_grandparent_decision[0:2]
-                    #     lines[7:9] = children_grandparent_decision[2:]
-                    # else:
-                    #     lines[4:6] = children_grandparent_decision
                     st=' '.join(lines)
                     nodes_replacement[line]=st
 
         #modify the flagged true nodes -- this will be needed if after pruning the remaining child is a true node with conditional probability
         # flag_tnode_modify
+
         if flag_tnode_modify:
+            tnode_change = None
+            dnode_change = None
             for node_mod in flag_tnode_modify:
                 print('\n\nModifying relevant T nodes')
                 cond_params={}
                 for line in full_psdd:
-
                     if line.split(' ')[0]!='c' and line.split(' ')[0]!='psdd':
-                        # print(line)
-                        # print(flag_tnode_modify)
-                        # print(line.split(' ')[1])
-                        # print(int(line.split(' ')[1]) in flag_tnode_modify[1],int(line.split(' ')[1]),flag_tnode_modify[1])
-                        if int(line.split(' ')[1]) in node_mod[1]:
-                        # if line.split(' ')[1]==str(flag_tnode_modify[1][0]) or line.split(' ')[1]==str(flag_tnode_modify[1][1]):
-                            cond_params[line.split(' ')[1]]=line.split(' ')[-1]
-                        if line.split(' ')[1]==node_mod[0]:
-                            tnode_change=line
+                        if line.split(' ')[1] == node_mod[0]:
+                            if line.split(' ')[0]=='T':
+                                tnode_change=line
+                            if line.split(' ')[0] == 'D':
+                                dnode_change = line
 
-                print('Cond params ', cond_params)
-                print(node_mod)
-                dnode=[]
-                print('Decision node of interest', replacements_back[node_mod[0]])
-                for ii in range(int((len(replacements_back[node_mod[0]].split(' '))-4)/3)):
-                    dn=replacements_back[node_mod[0]].split(' ')[4+(3*ii):4+(3*ii)+3]
-                    print(dn,positive_L)
-                    if str(positive_L[0]) in dn:
-                        for node in dn[0:2]:
-                            if node in cond_params:
-                                positive_cond_param=math.exp(float(cond_params[node]))
+                if tnode_change:
+                    cond_params[tnode_change.split(' ')[1]] = tnode_change.split(' ')[-1]
+                    print('Cond params ', cond_params)
+                    print(node_mod)
+                    print('Decision node of interest', replacements_back[node_mod[0]])
+                    for ii in range(int((len(replacements_back[node_mod[0]].split(' '))-4)/3)):
+                        dn=replacements_back[node_mod[0]].split(' ')[4+(3*ii):4+(3*ii)+3]
+                        print(dn,positive_L)
+                        if str(positive_L[0]) in dn:
+                            for node in dn[0:2]:
+                                if node in cond_params:
+                                    positive_cond_param=math.exp(float(cond_params[node]))
+                        if str(negative_L[0]) in dn:
+                            for node in dn[0:2]:
+                                if node in cond_params:
+                                    negative_cond_param = math.exp(float(cond_params[node]))
+                        if sum([1 for nn in dn if nn in [str(ni) for ni in positive_L]])>0: #this is the positive variable:
+                            pos_parent_param=math.exp(float(dn[2]))
+                            print(pos_parent_param)
+                        if sum([1 for nn in dn if nn in [str(ni) for ni in negative_L]])>0: #this is the positive variable:
+                            neg_parent_param=math.exp(float(dn[2]))
+                            print(neg_parent_param)
+                    new_pos_param=(positive_cond_param*pos_parent_param)+(negative_cond_param*neg_parent_param)
+                    newnode=tnode_change.split(' ')
+                    newnode[-1]=str(math.log(new_pos_param))
+                    nodes_replacement[tnode_change]=' '.join(newnode)
+                if dnode_change:  # I know this is not smart but I don't have time to modify the rest of the code, change later
+                    dnodes=[dnode_change]
+                    dnodes_params=[[math.exp(float(dnode_change.split(' ')[6+(3*ii)])) for ii in range(int(dnode_change.split(' ')[3]))]]
+                    #We first have to find the other dnodes
+                    nm=[str(nod) for nod in node_mod[1] if str(nod) not in dnode_change]
+                    print('nm is', nm)
+                    for other_dec in nm:
+                        for line in full_psdd:
+                            if line.split(' ')[0] != 'c' and line.split(' ')[0] != 'psdd':
+                                if line.split(' ')[0] == 'D' and line.split(' ')[1] == other_dec:
+                                    dnodes.append(line)
+                                    all_lines_to_remove.append(line)
+                                    dnodes_params.append([math.exp(float(line.split(' ')[6+(3*ii)])) for ii in range(int(line.split(' ')[3]))])
+                                    break
+                    print('Dnodes to merge are ', dnodes)
 
-                    if str(negative_L[0]) in dn:
-                        for node in dn[0:2]:
-                            if node in cond_params:
-                                negative_cond_param = math.exp(float(cond_params[node]))
+                    print(' Their params ', dnodes_params)
+                    #we will modify dnode_change to add the other dnodes as extra children and then we need to reparametrize everything
+                    print('Decision node parent', replacements_back[node_mod[0]])
+                    parent_decision_nodes=[]
+                    for ii in range(int(replacements_back[node_mod[0]].split(' ')[3])):
+                        parent_decision_nodes.append(replacements_back[node_mod[0]].split(' ')[4+(3*ii):4+(3*ii)+3])
+                    print(parent_decision_nodes)
 
-                    if sum([1 for nn in dn if nn in [str(ni) for ni in positive_L]])>0: #this is the positive variable:
-                        pos_parent_param=math.exp(float(dn[2]))
-                        print(pos_parent_param)
-                    if sum([1 for nn in dn if nn in [str(ni) for ni in negative_L]])>0: #this is the positive variable:
-                        neg_parent_param=math.exp(float(dn[2]))
-                        print(neg_parent_param)
+                    for dnode,dnode_param in zip(dnodes,dnodes_params):
+                        for ch in parent_decision_nodes:
+                            if dnode.split(' ')[1] in ch:
+                                print('For node ', dnode, ' parent param is ', math.exp(float(ch[-1])))
+                                print(dnode_param)
+                                dnodes_params[dnodes_params.index(dnode_param)]=[math.log(math.exp(float(ch[-1]))*param) for param in dnode_param]
+                                tempd = dnode.split(' ')
+                                for ii in range(int(dnode.split(' ')[3])):
+                                    tempd[6 + (3 * ii)]=str(math.log(math.exp(float(ch[-1]))*dnode_param[ii]))
+                                dnodes[dnodes.index(dnode)]=tempd
+                    #Now we merge the dnodes, we use the first's number
+                    newline=dnodes[0]
+                    newline=[newline+dnode[4:] for dnode in dnodes[1:]]
+                    newline[0][3]= str(int((len(newline[0])-4)/3))
+                    newline=(' ').join(newline[0])
+                    nodes_replacement[dnode_change] =newline
+                    print('Replace ', dnode_change, ' with ', newline)
 
 
-                print('parent params ', pos_parent_param,neg_parent_param)
-                print(cond_params)
-                print('conditional params',positive_cond_param,negative_cond_param)
-
-                new_pos_param=(positive_cond_param*pos_parent_param)+(negative_cond_param*neg_parent_param)
-                print('New param is ', math.log(new_pos_param))
-                print(tnode_change)
-                newnode=tnode_change.split(' ')
-                print(newnode)
-                newnode[-1]=str(math.log(new_pos_param))
-                nodes_replacement[tnode_change]=' '.join(newnode)
-
-        # #Change L to T nodes if needed
-        # if L_node_to_true:
-        #     for line in full_psdd:
-        #         if line.split(' ')[0]!='c' and line.split(' ')[0]!='psdd':
-        #             print(line)
-        #             if line.split(' ')[1]==str(flag_tnode_modify[1][0]) or line.split(' ')[1]==str(flag_tnode_modify[1][1]):
-        #
 
         print('\n')
         print('Nodes to modify ')
@@ -350,6 +368,7 @@ def prune_psdd(invtree,inpsdd,variables_prune,outpsdd):
         outpsddfile.write(line+'\n')
 
     print('Written pruned to ',outpsdd)
+
 
 def run(args):
     prune_psdd(args.invtree, args.inpsdd,args.prunef,args.outpsdd)
