@@ -237,7 +237,7 @@ def prune_psdd(invtree,inpsdd,variables_prune,outpsdd):
             tnode_change = None
             dnode_change = None
             for node_mod in flag_tnode_modify:
-                print('\n\nModifying relevant T nodes')
+                print('\n\nModifying node ', node_mod)
                 cond_params={}
                 for line in full_psdd:
                     if line.split(' ')[0]!='c' and line.split(' ')[0]!='psdd':
@@ -246,15 +246,27 @@ def prune_psdd(invtree,inpsdd,variables_prune,outpsdd):
                                 tnode_change=line
                             if line.split(' ')[0] == 'D':
                                 dnode_change = line
-
-                if tnode_change:
+                if tnode_change:  # I know this is not smart but I don't have time to modify the rest of the code, change later
+                    tnodes = [tnode_change]
                     cond_params[tnode_change.split(' ')[1]] = tnode_change.split(' ')[-1]
-                    print('Cond params ', cond_params)
-                    print(node_mod)
+                    # We first have to find the other tnodes
+                    mm = [str(nod) for nod in node_mod[1] if str(nod) not in tnode_change]
+                    print('mm is', mm)
+
+                    for other_dec in mm:
+                        for line in full_psdd:
+                            if line.split(' ')[0] != 'c' and line.split(' ')[0] != 'psdd':
+                                if line.split(' ')[0] == 'T' and line.split(' ')[1] == other_dec:
+                                    tnodes.append(line)
+                                    all_lines_to_remove.append(line)
+                                    cond_params[line.split(' ')[1]] = line.split(' ')[-1]
+                                    break
+                    print('Cond params is', cond_params)
+
                     print('Decision node of interest', replacements_back[node_mod[0]])
                     for ii in range(int((len(replacements_back[node_mod[0]].split(' '))-4)/3)):
                         dn=replacements_back[node_mod[0]].split(' ')[4+(3*ii):4+(3*ii)+3]
-                        print(dn,positive_L)
+                        print('dn,positive L',dn,positive_L)
                         if str(positive_L[0]) in dn:
                             for node in dn[0:2]:
                                 if node in cond_params:
@@ -273,6 +285,7 @@ def prune_psdd(invtree,inpsdd,variables_prune,outpsdd):
                     newnode=tnode_change.split(' ')
                     newnode[-1]=str(math.log(new_pos_param))
                     nodes_replacement[tnode_change]=' '.join(newnode)
+
                 if dnode_change:  # I know this is not smart but I don't have time to modify the rest of the code, change later
                     dnodes=[dnode_change]
                     dnodes_params=[[math.exp(float(dnode_change.split(' ')[6+(3*ii)])) for ii in range(int(dnode_change.split(' ')[3]))]]
