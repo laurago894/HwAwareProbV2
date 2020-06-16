@@ -2,14 +2,6 @@ import prune_PSDD
 import argparse, sys
 from util import Pareto_functions, functions
 
-# -invtree
-# /users/micas/lgalinde/Documents/code_2019/HwAwareProbV2/learned_models/vtrees/har_mv/har_mv_fold0_gen_cmi.vtree
-# -inpsdd
-# /users/micas/lgalinde/Documents/code_2019/HwAwareProbV2/learned_models/psdds/har_mv/har_mv_fold0_gen_cmi/models/0-152-prune1-25-50.psdd
-# -prunef
-# 26
-# -outpsdd
-# /users/micas/lgalinde/Documents/code_2019/HwAwareProbV2/learned_models/psdds/har_mv/har_mv_fold0_gen_cmi/models/0-152-prune1-25-50-26.psdd
 
 def run(args):
 
