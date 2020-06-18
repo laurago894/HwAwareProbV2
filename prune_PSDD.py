@@ -6,10 +6,7 @@ import math
 def info_psdd(invtree):
     # read vtree
     vtree = functions.read_file(invtree)
-    for line in vtree:
-        if line.split(' ')[0] == 'vtree':
-            nodes = int(((int(line.split(' ')[1]) + 1) / 2) + 1)
-
+    nodes=max([int(line.split(' ')[2]) for line in vtree if line.split(' ')[0]=='L'])+1
     # node cprresponding to the leaf
     leaf_nodes = [None] * nodes  # index is number of variable and content is vtree-node
     for line in vtree:
@@ -27,8 +24,7 @@ def info_psdd(invtree):
     for line in vtree:
         sline = line.split(' ')
         if sline[0] == "I":
-            internal_children[int(sline[1])] = [int(sline[2]), int(
-                sline[3])]  # {vtree node internal:[vtree-node-child1 vtree-node-child2]}
+            internal_children[int(sline[1])] = [int(sline[2]), int(sline[3])]  # {vtree node internal:[vtree-node-child1 vtree-node-child2]}
             leaf_parents[int(sline[2])] = int(sline[1])  # {vtree-node:parent}
             leaf_parents[int(sline[3])] = int(sline[1])
 
@@ -39,7 +35,7 @@ def info_psdd(invtree):
 
 
 
-def prune_psdd(invtree,inpsdd,variables_prune,outpsdd):
+def prune_psdd(invtree,inpsdd,variables_prune,outpsdd,outvtree):
 
     psddfile = functions.read_file(inpsdd)
     full_psdd = []
@@ -66,7 +62,7 @@ def prune_psdd(invtree,inpsdd,variables_prune,outpsdd):
         positive_L=[]
         negative_L = []
         all_lines_to_remove=[]
-        # print('\n\nVT node ', vtree_node)
+        print('\n\nVT node ', vtree_node)
 
     #it's parent and the other child
         parent=leaf_parents[vtree_node]
@@ -74,8 +70,8 @@ def prune_psdd(invtree,inpsdd,variables_prune,outpsdd):
         parent_of_parent=leaf_parents[parent]
 
         # print('vtree node ', vtree_node)
-        # print('Parent is  ', parent)
-        # print('Children of the parents ', internal_children[parent])
+        print('Parent is  ', parent)
+        print('Children of the parents ', internal_children[parent])
         # #
         # print('The parent of the parent is ', parent_of_parent, ' and its children are', internal_children[parent_of_parent], ' remove ', parent),
 
@@ -109,7 +105,6 @@ def prune_psdd(invtree,inpsdd,variables_prune,outpsdd):
                     potential_L_lines_remove.append(line)
                     all_lines_to_remove.append(line) #we remove the line that has the negative number and will modify the params of the positive one
 
-
         #true of leaf nodes from the vtree node of interest
         # print('PSDD T nodes to remove ', psdd_nodes_T_remove,'\n')
         # print('PSDD L nodes to remove ', psdd_nodes_L_remove, '\n')
@@ -133,7 +128,7 @@ def prune_psdd(invtree,inpsdd,variables_prune,outpsdd):
 
             if line.split(' ')[0] == 'D':
                 if int(line.split(' ')[2]) == parent:
-                    # print('\nParent line ', line)
+                    print('\nParent line ', line)
                     replace_flag = 1
                     #Check if we will have to modify the surviving sibling (when decision node parent is not deterministic we have to reparametrize)
                     if len(line.split(' '))>7:
@@ -193,6 +188,7 @@ def prune_psdd(invtree,inpsdd,variables_prune,outpsdd):
                             mod_lnode.append(new_param)
                             nodes_replacement[line]=' '.join(mod_lnode)
                             # print('Will now replace ',line, ' with  ', mod_lnode)
+
                     if replace_flag:
                         replacements[line.split(' ')[1]]=str(to_replace)
 
@@ -258,20 +254,35 @@ def prune_psdd(invtree,inpsdd,variables_prune,outpsdd):
                             if line.split(' ')[0] == 'D':
                                 dnode_change = line
                 if tnode_change:  # I know this is not smart but I don't have time to modify the rest of the code, change later
+                    print('tnode change ', tnode_change)
                     tnodes = [tnode_change]
                     cond_params[tnode_change.split(' ')[1]] = tnode_change.split(' ')[-1]
                     # We first have to find the other tnodes
                     mm = [str(nod) for nod in node_mod[1] if str(nod) not in tnode_change]
                     print('mm is', mm)
-
+                    rem_t=1
+                    linetoremove=None
                     for other_dec in mm:
                         for line in full_psdd:
                             if line.split(' ')[0] != 'c' and line.split(' ')[0] != 'psdd':
                                 if line.split(' ')[0] == 'T' and line.split(' ')[1] == other_dec:
                                     tnodes.append(line)
-                                    all_lines_to_remove.append(line)
+                                    # should not remove if used elsewhere though
                                     cond_params[line.split(' ')[1]] = line.split(' ')[-1]
+                                    linetoremove=line
                                     break
+                        print('Linetoremove ', linetoremove)
+                        if linetoremove:
+                            for row in full_psdd:
+                                if row.split(' ')[0] != 'c' and row.split(' ')[0] != 'psdd':
+                                    if row.split(' ')[0] == 'D' and linetoremove.split(' ')[1] in row.split(' ')[4:]:
+                                        rem_t=0
+                                        break
+                        if rem_t:
+                            all_lines_to_remove.append(line)
+                            print('Line remove ', line)
+
+
                     print('Cond params is', cond_params)
                     print('Positive ', positive_L, ', negative ', negative_L)
                     #
@@ -382,8 +393,8 @@ def prune_psdd(invtree,inpsdd,variables_prune,outpsdd):
         # print('and replace with other child', other_child)
         # print('Also remove T node ', vtree_node)
 
-        internal_children[parent_of_parent][internal_children[parent_of_parent].index(parent)]=other_child
-        leaf_parents[other_child]=parent_of_parent
+        # internal_children[parent_of_parent][internal_children[parent_of_parent].index(parent)]=other_child
+        # leaf_parents[other_child]=parent_of_parent
 
         # print('\n\nleaf nodes ', leaf_nodes)
         # print('internal children ',internal_children)
@@ -397,13 +408,42 @@ def prune_psdd(invtree,inpsdd,variables_prune,outpsdd):
     print('Written pruned to ',outpsdd)
 
 
+    ####### We also have to prune the vtree
+    vtree=functions.read_file(invtree)
+
+    # grandparent-
+    children_grandparent_vtree=internal_children[leaf_parents[leaf_parents[vtree_node]]]
+    original_vtree_grandparent='I '+ str(leaf_parents[leaf_parents[vtree_node]]) +' ' + (' ').join([str(ch) for ch in children_grandparent_vtree])
+    children_grandparent_vtree[children_grandparent_vtree.index(leaf_parents[vtree_node])]=[node for node in internal_children[leaf_parents[vtree_node]] if node!=vtree_node][0]
+    new_vtree_grandparent='I '+ str(leaf_parents[leaf_parents[vtree_node]]) +' ' + (' ').join([str(ch) for ch in children_grandparent_vtree])
+    #Modify grandparent
+    vtree[vtree.index(original_vtree_grandparent)]=new_vtree_grandparent
+    #remove leaf
+    vtree.pop(vtree.index('L '+str(vtree_node)+' '+str(var_prune[0])))
+    #remove parent
+    vtree.pop(vtree.index('I '+ str(leaf_parents[vtree_node]) + ' ' + (' ').join([str(ch) for ch in internal_children[leaf_parents[vtree_node]]])))
+    #reduce count by two
+    psddline=[(loc,vnode) for loc,vnode in enumerate(vtree) if 'vtree' in vnode and 'c' not in vnode]
+    newvtreeline= psddline[0][1].split(' ')[0]+' '+str(int(psddline[0][1].split(' ')[1])-2)
+
+    vtree[psddline[0][0]]=newvtreeline
+
+    print(vtree)
+
+    print('Writing modified vtree to ', outvtree)
+    outvtree_file=open(outvtree,'w')
+    for line in vtree:
+        outvtree_file.write(line+'\n')
+    outvtree_file.close()
+
 def run(args):
-    prune_psdd(args.invtree, args.inpsdd,args.prunef,args.outpsdd)
+    prune_psdd(args.invtree, args.inpsdd,args.prunef,args.outpsdd,args.outvtree)
 
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description='Run the hardware-aware model optimization')
     parser.add_argument('-invtree', '--invtree', type=str, default=None, help='Input vtree')
+    parser.add_argument('-outvtree', '--outvtree', type=str, default=None, help='Output vtree')
     parser.add_argument('-inpsdd', '--inpsdd', type=str, default=None, help='Input psdd')
     parser.add_argument('-outpsdd', '--outpsdd', type=str, default=None, help='Output psdd')
     parser.add_argument('-prunef', '--prunef', type=str, default=None, help='Features to prune (comma separated string)')
