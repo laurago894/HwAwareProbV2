@@ -164,20 +164,22 @@ def prune_psdd(invtree,inpsdd,variables_prune,outpsdd,outvtree):
 
                     #when replacing a mult-children decision node with a leaf node, we must modify that leaf node to a true node
                     #with the paraneters from the replaced decision node
+                    print(children_parent_decision)
                     if len(children_parent_decision)>2:
-                        # print('From parent ', line, 'momdify new pointer to be true')
+                        print('From parent ', line, 'momdify new pointer to be true')
                         potential_replace=[ch for ch in children_parent_decision if ch not in psdd_nodes_T_remove+psdd_nodes_L_remove]
-                        # print('Potential replace ', potential_replace)
-                        #which of the potential replacements is positive leaf
+                        print('Potential replace ', potential_replace)
+                        # which of the potential replacements is positive leaf
                         for chline in full_psdd:
                             if chline.split(' ')[0]=='L' and int(chline.split(' ')[1]) in potential_replace:
                                 if '-' not in chline.split(' ')[-1]:
                                     tr=chline
                                     replace_flag = 0
                         if replace_flag==0:
-                            # print('Will modify l node ', tr)
+                            print('Will modify l node ', tr)
+                            print(children_parent_decision)
                             #params of the decision node (it would make sense that this decision node only has two children...)
-                            if int(tr.split(' ')[1]) in children_parent_decision[0:2]:
+                            if int(tr.split(' ')[1]) in children_parent_decision:  #[0:2]:
                                 new_param=line.split(' ')[6]
                             # elif int(tr.split(' ')[1]) in children_parent_decision[2:]:
                             #     # print(line.split(' ')[9])
@@ -258,7 +260,7 @@ def prune_psdd(invtree,inpsdd,variables_prune,outpsdd,outvtree):
                     tnodes = [tnode_change]
                     cond_params[tnode_change.split(' ')[1]] = tnode_change.split(' ')[-1]
                     # We first have to find the other tnodes
-                    mm = [str(nod) for nod in node_mod[1] if str(nod) not in tnode_change]
+                    mm = [str(nod) for nod in node_mod[1] if str(nod) not in node_mod[0]]
                     print('mm is', mm)
                     rem_t=1
                     linetoremove=None
