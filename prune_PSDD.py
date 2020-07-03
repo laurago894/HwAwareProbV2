@@ -45,14 +45,14 @@ def prune_psdd(invtree,inpsdd,variables_prune,outpsdd,outvtree):
     largest_id = max([int(id.split(' ')[1]) for id in full_psdd if 'c' not in id and 'psdd' not in id])
     # var_prune=1
     var_prune=[int(v) for v in variables_prune.split(',')]
-    # print('variable to prune ',var_prune)
+    print('variable to prune ',var_prune)
     (leaf_nodes,internal_children,leaf_parents)=info_psdd(invtree)
 
     # what is the vtree node of the feature to prune
 
     vtree_nodes=[leaf_nodes[var] for var in var_prune]
     vtree_nodes.sort(reverse=True)
-    # print('vtree node',vtree_nodes)
+    print('vtree node',vtree_nodes)
 
     for var_to_prune,vtree_node in zip(var_prune,vtree_nodes):
         nodes_replacement = {}
@@ -64,15 +64,16 @@ def prune_psdd(invtree,inpsdd,variables_prune,outpsdd,outvtree):
         negative_L = []
         all_lines_to_remove=[]
         all_lines_to_add = []
-        # print('\n\nVT node ', vtree_node)
+        print('\n\nVT node ', vtree_node)
 
     #its parent and the other child
         parent=leaf_parents[vtree_node]
 
+
         parent_of_parent=leaf_parents[parent]
 
         # print('vtree node ', vtree_node)
-        # print('Parent is  ', parent)
+        print('Parent is  ', parent)
         # print('Children of the parents ', internal_children[parent])
         # #
         # print('The parent of the parent is ', parent_of_parent, ' and its children are', internal_children[parent_of_parent], ' remove ', parent),
@@ -132,7 +133,7 @@ def prune_psdd(invtree,inpsdd,variables_prune,outpsdd,outvtree):
 
             if line.split(' ')[0] == 'D':
                 if int(line.split(' ')[2]) == parent:
-                    # print('\nParent line ', line)
+                    print('\nParent line ', line)
                     parent_line=line
                     replace_flag = 1
                     #Check if we will have to modify the surviving sibling (when decision node parent is not deterministic we have to reparametrize)
@@ -148,7 +149,15 @@ def prune_psdd(invtree,inpsdd,variables_prune,outpsdd,outvtree):
                     #     children_grandparent_decision=children_grandparent_decision+lines[4 + (3 * ii): 4 + (3 * ii) + 3]
 
                     if len(line.split(' '))>7:
-                        children_parent_decision = [int(ch) for ch in line.split(' ')[4:6]+line.split(' ')[7:9]]
+                        # children_parent_decision = [int(ch) for ch in line.split(' ')[4:6]+line.split(' ')[7:9]]
+                        nch=line.split(' ')[3]
+                        temp=[]
+                        for ii in range(int(nch)):
+                            temp=temp+line.split(' ')[4 + (3 * ii): 4 + (3 * ii) + 2]
+
+                        children_parent_decision = [int(ch) for ch in temp]
+                        # [4 + (3 * ii): 4 + (3 * ii) + 2]
+
                     else:
                         children_parent_decision =[int(ch) for ch in line.split(' ')[4:6]]
                     print('From parent ', line)
@@ -383,7 +392,7 @@ def prune_psdd(invtree,inpsdd,variables_prune,outpsdd,outvtree):
                                     dnodes.append(line)
                                     all_lines_to_remove.append(line)
                                     dnodes_params.append([math.exp(float(line.split(' ')[6+(3*ii)])) for ii in range(int(line.split(' ')[3]))])
-                                    break
+                                    # break
                     print('Dnodes to merge are ', dnodes)
                     #
                     print(' Their params ', dnodes_params)
@@ -493,10 +502,14 @@ def prune_psdd(invtree,inpsdd,variables_prune,outpsdd,outvtree):
 
     # grandparent-
     children_grandparent_vtree=internal_children[leaf_parents[leaf_parents[vtree_node]]]
+    print('Children grandparent vtree ', children_grandparent_vtree)
     original_vtree_grandparent='I '+ str(leaf_parents[leaf_parents[vtree_node]]) +' ' + (' ').join([str(ch) for ch in children_grandparent_vtree])
+
     children_grandparent_vtree[children_grandparent_vtree.index(leaf_parents[vtree_node])]=[node for node in internal_children[leaf_parents[vtree_node]] if node!=vtree_node][0]
     new_vtree_grandparent='I '+ str(leaf_parents[leaf_parents[vtree_node]]) +' ' + (' ').join([str(ch) for ch in children_grandparent_vtree])
+
     #Modify grandparent
+    print('New grandparent ', new_vtree_grandparent)
     vtree[vtree.index(original_vtree_grandparent)]=new_vtree_grandparent
     #remove leaf
     vtree.pop(vtree.index('L '+str(vtree_node)+' '+str(var_prune[0])))
@@ -507,6 +520,9 @@ def prune_psdd(invtree,inpsdd,variables_prune,outpsdd,outvtree):
     newvtreeline= psddline[0][1].split(' ')[0]+' '+str(int(psddline[0][1].split(' ')[1])-2)
 
     vtree[psddline[0][0]]=newvtreeline
+
+    #  And modify the psdd to account for vtree with new parents
+
 
     # print(vtree)
 
