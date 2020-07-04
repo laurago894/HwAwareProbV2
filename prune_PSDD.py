@@ -109,8 +109,8 @@ def prune_psdd(invtree,inpsdd,variables_prune,outpsdd,outvtree):
                     all_lines_to_remove.append(line) #we remove the line that has the negative number and will modify the params of the positive one
 
         #true of leaf nodes from the vtree node of interest
-        # print('PSDD T nodes to remove ', psdd_nodes_T_remove,'\n')
-        # print('PSDD L nodes to remove ', psdd_nodes_L_remove, '\n')
+        print('PSDD T nodes to remove ', psdd_nodes_T_remove,'\n')
+        print('PSDD L nodes to remove ', psdd_nodes_L_remove, '\n')
 
         # save then in aux variable because we need to know whose sibling we keep and we need to modify that sibling's params
         #but this only makes sense if the parents of positiveL and negative L were not deterministic
@@ -162,13 +162,21 @@ def prune_psdd(invtree,inpsdd,variables_prune,outpsdd,outvtree):
                         children_parent_decision =[int(ch) for ch in line.split(' ')[4:6]]
                     print('From parent ', line)
                     print('children parent decision', children_parent_decision)
+
+                    other_childrenpsdd = [ch for ch in children_parent_decision if ch in psdd_nodes_T_remove + psdd_nodes_L_remove]
                     other_childpsdd = [ch for ch in children_parent_decision if ch in psdd_nodes_T_remove + psdd_nodes_L_remove][0]
                     rep=[ch for ch in children_parent_decision if ch not in psdd_nodes_T_remove+psdd_nodes_L_remove]
-                    to_replace=[ch for ch in children_parent_decision if ch not in psdd_nodes_T_remove+psdd_nodes_L_remove][0]
+                    # to_replace=[ch for ch in children_parent_decision if ch not in psdd_nodes_T_remove+psdd_nodes_L_remove][0]
+                    to_replace=rep[other_childrenpsdd.index(positive_L[0])]
+                    print('To replace is ', to_replace)
+                    print('To replace all ', rep)
+                    print('Other child is ', other_childpsdd,' positive L ', positive_L)
+                    print('Other children is ', other_childrenpsdd)
+                    print( 'To replace is now ', rep[other_childrenpsdd.index(positive_L[0])])
 
-                    # print('To replace is ', to_replace)
-                    print('Other child is ', other_childpsdd)
-                    if other_childpsdd in positive_L and len(line.split(' '))>7:
+                    # if other_childpsdd in positive_L and len(line.split(' '))>7:
+                    if len(line.split(' ')) > 7:
+
                         flag_tnode_modify.append([str(to_replace),rep, parent_line])
                         # flag_tnode_modify.append(rep)
                         print('Flagged T node to be modified ', flag_tnode_modify)
@@ -437,7 +445,7 @@ def prune_psdd(invtree,inpsdd,variables_prune,outpsdd,outvtree):
                             newline=(' ').join(newline[0])
                         nodes_replacement[dnode_change] =newline
 
-                        # print('Replace ', dnode_change, ' with ', newline)
+                        print('Replace ', dnode_change, ' with ', newline)
 
 
         #
