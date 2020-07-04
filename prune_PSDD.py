@@ -114,7 +114,7 @@ def prune_psdd(invtree,inpsdd,variables_prune,outpsdd,outvtree):
 
         # save then in aux variable because we need to know whose sibling we keep and we need to modify that sibling's params
         #but this only makes sense if the parents of positiveL and negative L were not deterministic
-        # print('Potential L lines remove ', potential_L_lines_remove)
+        print('Potential L lines remove ', potential_L_lines_remove)
         # print(parent)
         # positive_L=positive_L+ [int(pl.split(' ')[1]) for pl in potential_L_lines_remove if pl.split(' ')[-1]=='1']
         # negative_L = negative_L + [pl.split(' ')[1] for pl in potential_L_lines_remove if pl.split(' ')[-1] == '-1']
@@ -124,6 +124,7 @@ def prune_psdd(invtree,inpsdd,variables_prune,outpsdd,outvtree):
 
         flag_tnode_modify=[]
         modified_tnodes=[]
+        modified_dnodes = []
 
         L_node_to_true=[]
         replacements={}
@@ -138,12 +139,12 @@ def prune_psdd(invtree,inpsdd,variables_prune,outpsdd,outvtree):
                     replace_flag = 1
                     #Check if we will have to modify the surviving sibling (when decision node parent is not deterministic we have to reparametrize)
                     if len(line.split(' '))>7:
-                        # print('Potential L lines remove ', potential_L_lines_remove)
+                        print('Potential L lines remove ', potential_L_lines_remove)
                         positive_L = positive_L + [int(pl.split(' ')[1]) for pl in potential_L_lines_remove if
                                                    pl.split(' ')[-1] == str(var_to_prune)]
                         negative_L = negative_L + [pl.split(' ')[1] for pl in potential_L_lines_remove if
                                                    pl.split(' ')[-1] == '-'+str(var_to_prune)]
-                        # print('Positive L is ', positive_L)
+                        print('Positive L is ', positive_L)
                     all_lines_to_remove.append(line)
                     # for ii in range(int((len(lines) - 4) / 3)):
                     #     children_grandparent_decision=children_grandparent_decision+lines[4 + (3 * ii): 4 + (3 * ii) + 3]
@@ -167,12 +168,13 @@ def prune_psdd(invtree,inpsdd,variables_prune,outpsdd,outvtree):
                     other_childpsdd = [ch for ch in children_parent_decision if ch in psdd_nodes_T_remove + psdd_nodes_L_remove][0]
                     rep=[ch for ch in children_parent_decision if ch not in psdd_nodes_T_remove+psdd_nodes_L_remove]
                     # to_replace=[ch for ch in children_parent_decision if ch not in psdd_nodes_T_remove+psdd_nodes_L_remove][0]
-                    to_replace=rep[other_childrenpsdd.index(positive_L[0])]
-                    print('To replace is ', to_replace)
+
                     print('To replace all ', rep)
                     print('Other child is ', other_childpsdd,' positive L ', positive_L)
                     print('Other children is ', other_childrenpsdd)
                     print( 'To replace is now ', rep[other_childrenpsdd.index(positive_L[0])])
+                    to_replace=rep[other_childrenpsdd.index(positive_L[0])]
+                    print('To replace is ', to_replace)
 
                     # if other_childpsdd in positive_L and len(line.split(' '))>7:
                     if len(line.split(' ')) > 7:
@@ -268,6 +270,7 @@ def prune_psdd(invtree,inpsdd,variables_prune,outpsdd,outvtree):
             tnode_change = None
             tnode_change_parent=None
             dnode_change = None
+            dnode_change_parent = None
             for node_mod in flag_tnode_modify:
                 print('\n\nModifying node ', node_mod)
                 cond_params={}
@@ -279,6 +282,7 @@ def prune_psdd(invtree,inpsdd,variables_prune,outpsdd,outvtree):
                                 tnode_change_parent=node_mod[2]
                             if line.split(' ')[0] == 'D':
                                 dnode_change = line
+                                dnode_change_parent = node_mod[2]
                 if tnode_change:  # I know this is not smart but I don't have time to modify the rest of the code, change later
                     print('tnode change ', tnode_change)
                     print('Its parent is ', tnode_change_parent)
@@ -361,9 +365,9 @@ def prune_psdd(invtree,inpsdd,variables_prune,outpsdd,outvtree):
                         print('We will add modified ', newnode)
                         #Look for largest ID
 
-                        print('Largest ID is ', largest_id)
+                        # print('Largest ID is ', largest_id)
                         newnode[1]=str(largest_id+1)
-                        print('New node to append to psdd is ', ' '.join(newnode))
+                        # print('New node to append to psdd is ', ' '.join(newnode))
                         # all_lines_to_add.append(' '.join(newnode))
                         print('Looking for ', tnode_change_parent.split(' ')[1])
                         print(nodes_replacement)
@@ -379,7 +383,7 @@ def prune_psdd(invtree,inpsdd,variables_prune,outpsdd,outvtree):
                                 temp[nr.split(' ').index(tnode_change_parent.split(' ')[1])]=str(largest_id+1)
 
                                 nodes_replacement[nr]=(' ').join(temp)
-                        print('New nodes replacement ', nodes_replacement)
+                        # print('New nodes replacement ', nodes_replacement)
                         largest_id += 1
                         full_psdd.insert(id_append_new,' '.join(newnode))
                     elif rem_t:
@@ -436,17 +440,52 @@ def prune_psdd(invtree,inpsdd,variables_prune,outpsdd,outvtree):
                             else:
                                 newline=newline+dnode[4:]
                         # newline[0][3]= str(int((len(newline[0])-4)/3))
-                        if newline[0]=='D':
-                            newline=newline
-                            newline[3] = str(int((len(newline[0]) - 4) / 3))
-                            newline = (' ').join(newline)
+                        print('Newline is ', newline)
+
+                        #Only modify the dnode if it has not been modified before, otherwise have to generate new Dnode with new ID
+                        ######################################3
+                        #########################################
+                        # print('dnode change parent ', dnode_change_parent)
+                        # print('Already modified ', modified_dnodes )
+                        if newline[1] in modified_dnodes:
+                            newnode=[nn for nn in newline]
+                            print('Largest ID is ', largest_id)
+                            newnode[1] = str(largest_id + 1)
+                        #
+                            print('Looking for ', dnode_change_parent)
+                        #     #
+                            id_append_new = len(full_psdd)
+                            for nr in nodes_replacement:
+                                if dnode_change_parent.split(' ')[1] in nr.split(' ')[4:]:
+                                    print('Found in dnode change ', nr)
+                                    if full_psdd.index(nr) < id_append_new:
+                                        id_append_new = full_psdd.index(nr)
+                                    print(nr, 'Position ', nr.split(' ').index(dnode_change_parent.split(' ')[1]))
+                                    pos=nr.split(' ').index(dnode_change_parent.split(' ')[1])
+                                    temp = nodes_replacement[nr]
+                                    temp = temp.split(' ')
+                                    temp[pos] = str(largest_id + 1)
+                                    print('New replacement is ', temp)
+                                    nodes_replacement[nr] = (' ').join(temp)
+                                    print('Replacing now ', nr, ' with ', (' ').join(temp))
+                            # print('New nodes replacement ', nodes_replacement)
+                            largest_id += 1
+                            newnode[3] = str(int((len(newnode) - 4) / 3))
+                            print('And adding ', newnode)
+                            full_psdd.insert(id_append_new, ' '.join(newnode))
+                        ###########################################
+                        #########################################
                         else:
-                            newline[0][3] = str(int((len(newline[0]) - 4) / 3))
-                            newline=(' ').join(newline[0])
-                        nodes_replacement[dnode_change] =newline
-
-                        print('Replace ', dnode_change, ' with ', newline)
-
+                            if newline[0]=='D':
+                                newline=newline
+                                newline[3] = str(int((len(newline) - 4) / 3))
+                                newline = (' ').join(newline)
+                            else:
+                                newline[0][3] = str(int((len(newline[0]) - 4) / 3))
+                                newline=(' ').join(newline[0])
+                            nodes_replacement[dnode_change] =newline
+                            print('Replace ', dnode_change, ' with ', newline)
+                            modified_dnodes.append(newline.split(' ')[1])
 
         #
         print('\n')
@@ -468,7 +507,7 @@ def prune_psdd(invtree,inpsdd,variables_prune,outpsdd,outvtree):
         print('\nNodes to remove')
 
         for node_remove in all_lines_to_remove:
-            print('Check 1 ',node_remove in full_psdd)
+            # print('Check 1 ',node_remove in full_psdd)
             if node_remove in full_psdd:
                 print(node_remove)
                 full_psdd.pop(full_psdd.index(node_remove))
